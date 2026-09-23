@@ -124,9 +124,9 @@ function drop(paths) {
     } else if (/\.csv$/i.test(p)) {
       if (!scan) analyse();
       const r = importCsv(p);
-      messages.push(`${path.basename(p)} : ${r.added} références importées` + (r.unknown.length ? ` ; décors inconnus : ${r.unknown.join(', ')}` : ''));
+      messages.push(`${path.basename(p)} : ${r.added} références importées` + (r.unknown.length ? ` ; décos inconnues : ${r.unknown.join(', ')}` : ''));
     } else {
-      messages.push(`${path.basename(p)} : déposez un dossier décor ou un fichier CSV`);
+      messages.push(`${path.basename(p)} : déposez un dossier déco ou un fichier CSV`);
     }
   }
   saveSettings();
@@ -208,7 +208,7 @@ function createWindow() {
   ipcMain.handle('drop', (_, paths) => drop(paths));
   ipcMain.handle('add-source', async () => {
     const r = await dialog.showOpenDialog(win, {
-      title: 'Ajouter un dossier décor',
+      title: 'Ajouter un dossier déco',
       defaultPath: settings.gamme || undefined,
       properties: ['openDirectory', 'createDirectory'],
     });

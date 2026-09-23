@@ -107,7 +107,7 @@ function renderListe() {
       <span class="nom">${esc(d.dossier)}${badges.join('')}</span>
       <button class="detail-lien" data-detail aria-label="Voir la fiche de ${esc(d.dossier)}">Détail →</button>
     </li>`;
-  }).join('') || '<li class="aide">Aucun décor</li>';
+  }).join('') || '<li class="aide">Aucune déco</li>';
 }
 
 $('#decors').addEventListener('click', e => {
@@ -302,8 +302,8 @@ function renderLot() {
   const impossibles = choisis.reduce((n, x) => n + x.stats.blocked, 0);
   if (!d.lock) {
     resume.innerHTML = !choisis.length
-      ? 'Cochez les décors à générer'
-      : `${plural(choisis.length, 'décor')} : <strong>${plural(images, 'image')} à produire</strong>` +
+      ? 'Cochez les décos à générer'
+      : `${plural(choisis.length, 'déco')} : <strong>${plural(images, 'image')} à produire</strong>` +
         (impossibles ? `, ${plural(impossibles, 'impossible')}` : '') +
         (!images && !refaire ? ', tout est à jour' : '');
   }
