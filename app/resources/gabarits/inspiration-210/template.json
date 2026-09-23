@@ -1,0 +1,105 @@
+{
+  "source": "LEAF INSPIRATION 210 ULM620.psd",
+  "width": 4000,
+  "height": 4000,
+  "layers": [
+    {
+      "type": "image",
+      "name": "Corrections",
+      "hidden": false,
+      "left": 0,
+      "top": 0,
+      "blendMode": "normal",
+      "opacity": 1,
+      "file": "calque-corrections.png"
+    },
+    {
+      "type": "panel",
+      "name": "Panneau droit 100x210",
+      "hidden": false,
+      "left": 1855,
+      "top": 820,
+      "blendMode": "normal",
+      "opacity": 1,
+      "position": "droit",
+      "quad": [
+        [
+          1855.2152538488717,
+          952.3706922959472
+        ],
+        [
+          2852.4391054806215,
+          820.1256897183671
+        ],
+        [
+          2854.123695785231,
+          3349.2882021154132
+        ],
+        [
+          1855.9331125107922,
+          3196.8292890136026
+        ]
+      ],
+      "sourceSize": [
+        1225,
+        2571
+      ],
+      "coverage": "couverture-panneau-droit-100x210.png"
+    },
+    {
+      "type": "panel",
+      "name": "Panneau gauche 100x210",
+      "hidden": false,
+      "left": 1135,
+      "top": 721,
+      "blendMode": "normal",
+      "opacity": 1,
+      "position": "gauche",
+      "quad": [
+        [
+          1135.260933527226,
+          721.5241256404154
+        ],
+        [
+          1852.1279669664032,
+          952.7900007184696
+        ],
+        [
+          1856.2769674062038,
+          3196.351773406614
+        ],
+        [
+          1135.6453616502051,
+          3458.332050973567
+        ]
+      ],
+      "sourceSize": [
+        1317,
+        2765
+      ],
+      "coverage": "couverture-panneau-gauche-100x210.png"
+    },
+    {
+      "type": "image",
+      "name": "Effets panneau OF170",
+      "hidden": false,
+      "left": 1126,
+      "top": 721,
+      "blendMode": "multiply",
+      "opacity": 1,
+      "blendIfGray": [
+        0,
+        0,
+        170,
+        255
+      ],
+      "file": "calque-effets-panneau-of170.png",
+      "mask": {
+        "file": "masque-effets-panneau-of170.png",
+        "left": 1139,
+        "top": 723,
+        "defaultColor": 0
+      }
+    }
+  ]
+}

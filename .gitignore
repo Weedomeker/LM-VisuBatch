@@ -1,0 +1,22 @@
+# Dépendances
+app/node_modules/
+
+# Builds
+app/dist/
+
+# Données d'exemple (binaires lourds, 90+ Mo)
+exemple/
+
+# Fichiers générés localement
+inventaire.csv
+
+# Session de brainstorming
+app/.superpowers/
+.superpowers/
+
+# Réglages utilisateur (userData Electron, générés au runtime)
+*.json.bak
+
+# OS
+.DS_Store
+Thumbs.db

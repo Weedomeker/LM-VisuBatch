@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'">
+  <title>Visuels web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="barre">
+    <strong class="marque">Visuels web</strong>
+    <div class="dossier">
+      <span class="dossier-nom">GAMME</span>
+      <span class="dossier-chemin" id="chemin-gamme">non choisi</span>
+      <button class="lien" data-choisir="gamme">Changer</button>
+    </div>
+    <div class="dossier">
+      <span class="dossier-nom">Sortie</span>
+      <span class="dossier-chemin" id="chemin-sortie">non choisi</span>
+      <button class="lien" data-choisir="sortie">Changer</button>
+    </div>
+    <div class="options-wrap">
+      <button class="secondaire" id="btn-options">⚙ Options</button>
+      <div class="popover-options" id="popover-options" hidden>
+        <span class="popover-label">Types de visuels</span>
+        <div id="types"></div>
+        <span class="popover-label" style="margin-top:14px">Rangement des images</span>
+        <div class="bascule" role="radiogroup" aria-label="Rangement des images">
+          <button role="radio" data-rangement="plat">Tout à plat</button>
+          <button role="radio" data-rangement="decor">Un dossier par décor</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="principal">
+    <div class="barre-outils">
+      <input type="search" id="recherche" placeholder="Chercher un décor" aria-label="Chercher un décor">
+      <div class="filtres" role="radiogroup" aria-label="Filtrer les décors">
+        <button role="radio" data-filtre="tous">Tous</button>
+        <button role="radio" data-filtre="afaire">À faire</button>
+        <button role="radio" data-filtre="incomplets">Incomplets</button>
+      </div>
+      <button class="lien" id="cocher-afaire">Cocher les À faire</button>
+      <button class="lien" id="tout-decocher">Tout décocher</button>
+      <button class="lien" id="ajouter-source">+ Ajouter un dossier</button>
+    </div>
+    <div class="depot" id="depot" hidden>
+      <p><strong>Déposez un dossier décor</strong> ou un CSV de références</p>
+    </div>
+    <ul id="decors" class="decors" aria-label="Décors"></ul>
+  </main>
+
+  <footer class="lot" id="lot">
+    <label class="refaire"><input type="checkbox" id="tout-refaire"> Tout refaire</label>
+    <div class="resume" id="resume"></div>
+    <div class="actions" id="actions">
+      <button class="principal" id="generer">Générer</button>
+    </div>
+  </footer>
+
+  <!-- Tiroir fiche -->
+  <div class="tiroir-fond" id="tiroir-fond" hidden></div>
+  <aside class="tiroir" id="tiroir" hidden>
+    <div class="tiroir-entete">
+      <strong class="tiroir-titre" id="tiroir-titre"></strong>
+      <button class="tiroir-fermer" id="tiroir-fermer" aria-label="Fermer la fiche">✕</button>
+    </div>
+    <div class="tiroir-corps" id="tiroir-corps"></div>
+  </aside>
+
+  <div class="messages" id="messages" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
