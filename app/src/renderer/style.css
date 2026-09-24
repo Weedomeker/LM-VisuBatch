@@ -1,5 +1,5 @@
-@font-face { font-family: 'Montserrat'; font-weight: 400; src: url('../resources/fonts/Montserrat-Regular.ttf'); }
-@font-face { font-family: 'Montserrat'; font-weight: 700; src: url('../resources/fonts/Montserrat-Bold.ttf'); }
+@font-face { font-family: 'Montserrat'; font-weight: 400; src: url('../../resources/fonts/Montserrat-Regular.ttf'); }
+@font-face { font-family: 'Montserrat'; font-weight: 700; src: url('../../resources/fonts/Montserrat-Bold.ttf'); }
 
 /* Teintes de la gamme : fond minéral, action en ULM620 vert de gris foncé, alerte en ULM180 caramel. */
 :root {

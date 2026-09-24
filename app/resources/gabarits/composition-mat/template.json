@@ -55,16 +55,6 @@
       "blendMode": "normal",
       "opacity": 1,
       "file": "calque-vernis.png"
-    },
-    {
-      "type": "image",
-      "name": "Texture brillante",
-      "hidden": true,
-      "left": 471,
-      "top": 848,
-      "blendMode": "normal",
-      "opacity": 0.8,
-      "file": "calque-texture-brillante.png"
     }
   ]
 }
