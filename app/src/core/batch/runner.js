@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const { Worker } = require('worker_threads');
 const { copyTask, tmpName } = require('./execute');
+const { log } = require('../utils/log');
 
 // Un rendu 4000 px occupe plusieurs centaines de Mo : on plafonne aussi selon la mémoire.
 const defaultJobs = () => Math.max(1, Math.min(os.cpus().length - 1, Math.floor(os.totalmem() / 2 ** 30 / 1.5), 8));
@@ -27,17 +28,20 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
   let done = 0;
   let lastSave = Date.now();
 
-  const finish = (task, error) => {
+  // `stack` : pile d'appel de l'erreur, pour le diagnostic seulement.
+  const finish = (task, error, stack) => {
     done++;
-    if (error) errors.push({ ...describe(task), error });
-    else for (const f of task.outputs) manifest.set(f, task.hash);
+    if (error) {
+      errors.push({ ...describe(task), error });
+      log.error(`${task.row.dossier} ${task.row.ref} ${task.type} (${path.basename(task.outputs[0])}) : ${stack || error}`);
+    } else for (const f of task.outputs) manifest.set(f, task.hash);
     onEvent({ type: error ? 'error' : 'done', task: describe(task), done, total, error });
     if (Date.now() - lastSave > 2000) { manifest.save(); lastSave = Date.now(); }
   };
 
   for (const task of plan.copies) {
     if (signal?.aborted) break;
-    try { copyTask({ ...task, tag }); finish(task); } catch (e) { finish(task, e.message); }
+    try { copyTask({ ...task, tag }); finish(task); } catch (e) { finish(task, e.message, e.stack); }
   }
 
   const queue = [...plan.renders];
@@ -46,11 +50,11 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
   const abort = () => { for (const w of workers) w.terminate(); };
   signal?.addEventListener('abort', abort, { once: true });
 
-  // Envoie une tâche au worker ; se résout aussi si le worker meurt (plantage, annulation).
+  // Envoie une tâche au worker ; se résout ({ error?, stack? }) aussi si le worker meurt (plantage, annulation).
   const send = (w, task) => new Promise(resolve => {
-    const onMessage = m => { cleanup(); resolve(m.error); };
-    const onExit = code => { cleanup(); resolve(signal?.aborted ? 'annulé' : `Le rendu s'est arrêté (code ${code})`); };
-    const onError = e => { cleanup(); resolve(e.message); };
+    const onMessage = m => { cleanup(); resolve(m); };
+    const onExit = code => { cleanup(); resolve({ error: signal?.aborted ? 'annulé' : `Le rendu s'est arrêté (code ${code})` }); };
+    const onError = e => { cleanup(); resolve({ error: e.message, stack: e.stack }); };
     const cleanup = () => { w.off('message', onMessage); w.off('exit', onExit); w.off('error', onError); };
     w.on('message', onMessage); w.on('exit', onExit); w.on('error', onError);
     w.postMessage({ ...task, tag });
@@ -69,9 +73,9 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
       while (queue.length && !signal?.aborted) {
         const task = queue.shift();
         onEvent({ type: 'start', task: describe(task), done, total });
-        const error = await send(w, task);
+        const { error, stack } = await send(w, task);
         if (signal?.aborted) { interrupted.push(task); break; }
-        finish(task, error);
+        finish(task, error, stack);
         if (!workers.has(w)) w = spawn(); // worker mort (mémoire…) : on repart sur un neuf
       }
     } finally {

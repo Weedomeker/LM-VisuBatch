@@ -1,14 +1,16 @@
 // Processus principal : fenêtre, réglages de l'utilisateur et pont entre l'interface et le moteur.
 // La GAMME n'est jamais modifiée : les décors déposés et les références saisies restent dans les réglages de l'app.
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const sharp = require('sharp');
 const core = require('../core');
+const { log } = core;
 const { readCsv } = require('../core/utils/csv');
 const { formatKey } = require('../core/inventaire');
 
-// Gabarits, pages statiques, polices, unis et réglages livrés : dans l'app (non archivée, voir « build.asar »).
+// Gabarits, pages statiques, polices et réglages livrés : dans l'app (non archivée, voir « build.asar »).
 const RESOURCES = path.join(__dirname, '..', '..', 'resources');
 
 // ---------------------------------------------------------------------------
@@ -19,7 +21,12 @@ const DEFAULTS = { gamme: '', outDir: '', rangement: 'plat', sources: [], saisie
 let settings = { ...DEFAULTS };
 
 function loadSettings() {
-  try { settings = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) }; } catch { settings = { ...DEFAULTS }; }
+  try {
+    settings = { ...DEFAULTS, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) };
+  } catch (e) {
+    if (e.code !== 'ENOENT') log.warn(`Réglages illisibles (${settingsFile()}), valeurs par défaut utilisées : ${e.message}`);
+    settings = { ...DEFAULTS };
+  }
 }
 function saveSettings() {
   fs.mkdirSync(path.dirname(settingsFile()), { recursive: true });
@@ -34,6 +41,7 @@ function mergedReglages() {
 }
 
 const cacheDir = () => path.join(app.getPath('userData'), 'cache');
+const logsDir = () => path.join(app.getPath('userData'), 'logs');
 
 // ---------------------------------------------------------------------------
 // Analyse : scan de la GAMME et des décors déposés, puis état de chaque décor dans le dossier de sortie.
@@ -42,7 +50,11 @@ let scan = null;
 
 function analyse() {
   if (!settings.gamme) return { settings, needs: 'gamme' };
-  if (!fs.existsSync(settings.gamme)) return { settings, needs: 'gamme', error: `Dossier GAMME introuvable : ${settings.gamme}` };
+  if (!fs.existsSync(settings.gamme)) {
+    log.warn(`Dossier GAMME introuvable : ${settings.gamme}`);
+    return { settings, needs: 'gamme', error: `Dossier GAMME introuvable : ${settings.gamme}` };
+  }
+  const t0 = Date.now();
   scan = core.scanGamme(settings.gamme, { sources: settings.sources, saisies: settings.saisies });
   const reglages = mergedReglages();
   const plan = settings.outDir ? prepare({}).plan : null;
@@ -64,6 +76,11 @@ function analyse() {
     impossibles: blockedBy.get(d.dossier) ?? [],
     reglage: reglages.find(r => r.dossier === d.dossier) ?? {},
   })).sort((a, b) => a.dossier.localeCompare(b.dossier, 'fr'));
+  log.info(`Analyse de ${settings.gamme} : ${decors.length} décos, ${scan.problems.length} problèmes` +
+    (plan ? `, ${plan.counts.images} images à faire, ${plan.counts.blocked} impossibles` : ', pas de dossier de sortie') +
+    ` (${Date.now() - t0} ms)`);
+  for (const p of scan.problems) log.debug(`Problème : ${p}`);
+  for (const b of plan?.blocked ?? []) log.debug(`Impossible : ${b.dossier} ${b.ref} ${b.type} : ${b.message}`);
   const unis = scan.decors.map(d => d.dossier.match(/^(\d{3})\s+(.*)$/)).filter(Boolean).map(m => ({ code: m[1], nom: m[2] }));
   return {
     settings,
@@ -152,6 +169,8 @@ async function generate(win, { dossiers, force }) {
     const result = await core.runBatch(batch, { signal: running.signal, onEvent: send });
     return { ...result, images: batch.plan.counts.images };
   } catch (e) {
+    if (e.code === 'LOCKED') log.warn(e.message);
+    else log.error(e);
     return { error: e.message, locked: e.code === 'LOCKED' };
   } finally {
     running = null;
@@ -168,7 +187,7 @@ async function thumb(file, height = 240) {
   if (!thumbs.has(key)) {
     thumbs.set(key, sharp(file).resize({ height }).jpeg({ quality: 80 }).toBuffer()
       .then(b => `data:image/jpeg;base64,${b.toString('base64')}`)
-      .catch(() => null));
+      .catch(e => { log.warn(`Vignette impossible (${file}) : ${e.message}`); return null; }));
   }
   return thumbs.get(key);
 }
@@ -188,7 +207,9 @@ function createWindow() {
   win.removeMenu();
   win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
-  ipcMain.handle('analyse', () => analyse());
+  ipcMain.handle('analyse', () => {
+    try { return analyse(); } catch (e) { log.error(e); throw e; }
+  });
   ipcMain.handle('choose-folder', async (_, kind) => {
     const r = await dialog.showOpenDialog(win, {
       title: kind === 'gamme' ? 'Dossier GAMME' : 'Dossier de sortie',
@@ -197,6 +218,7 @@ function createWindow() {
     });
     if (r.canceled) return null;
     settings[kind === 'gamme' ? 'gamme' : 'outDir'] = r.filePaths[0];
+    log.info(`Dossier ${kind === 'gamme' ? 'GAMME' : 'de sortie'} choisi : ${r.filePaths[0]}`);
     saveSettings();
     return r.filePaths[0];
   });
@@ -234,14 +256,32 @@ function createWindow() {
   ipcMain.handle('generate', (_, options) => generate(win, options));
   ipcMain.handle('cancel', () => running?.abort());
   ipcMain.handle('open-output', () => settings.outDir && shell.openPath(settings.outDir));
+  ipcMain.handle('open-logs', () => shell.openPath(logsDir()));
+  // Erreurs de l'interface, consignées dans le même journal.
+  ipcMain.handle('log', (_, level, text) => {
+    if (['error', 'warn', 'info'].includes(level)) log[level](`Interface : ${text}`);
+  });
 }
 
 // Développement : VISUELS_USERDATA isole les réglages ; VISUELS_CAPTURE=<png> exécute VISUELS_SCRIPT dans la page,
 // enregistre une capture de la fenêtre puis quitte.
 if (process.env.VISUELS_USERDATA) app.setPath('userData', process.env.VISUELS_USERDATA);
 
+// Plantage du processus principal : consigné, puis signalé comme le fait Electron par défaut.
+const crash = e => {
+  log.error(e instanceof Error ? e : new Error(String(e)));
+  dialog.showErrorBox('Erreur inattendue', `${e?.stack || e}
+
+Détails dans les logs : ${logsDir()}`);
+};
+process.on('uncaughtException', crash);
+process.on('unhandledRejection', crash);
+
 app.whenReady().then(() => {
+  core.configureLog({ dir: logsDir() });
+  log.info(`Démarrage de Visuels web ${app.getVersion()} — ${os.type()} ${os.release()} ${process.arch}, Electron ${process.versions.electron}`);
   loadSettings();
+  log.info(`GAMME : ${settings.gamme || 'non choisie'} — sortie : ${settings.outDir || 'non choisie'}`);
   createWindow();
   const capture = process.env.VISUELS_CAPTURE;
   if (capture) {

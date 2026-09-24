@@ -18,6 +18,6 @@ parentPort.on('message', async task => {
     await renderTask(ctx, task);
     parentPort.postMessage({ key: task.key });
   } catch (e) {
-    parentPort.postMessage({ key: task.key, error: e.message });
+    parentPort.postMessage({ key: task.key, error: e.message, stack: e.stack });
   }
 });

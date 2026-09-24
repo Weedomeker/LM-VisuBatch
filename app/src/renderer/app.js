@@ -9,6 +9,11 @@ const TYPES = [
 ];
 const PX_PAR_CM = 0.95; // échelle des panneaux dessinés
 
+// Erreurs de l'interface : consignées dans le journal du poste.
+window.addEventListener('error', e => api.log('error', `${e.message} (${e.filename}:${e.lineno})
+${e.error?.stack ?? ''}`));
+window.addEventListener('unhandledrejection', e => api.log('error', e.reason?.stack ?? String(e.reason)));
+
 const state = { data: null, courant: null, coches: new Set(), filtre: 'tous', recherche: '', enCours: false, analyse: false };
 
 // ---------------------------------------------------------------------------
@@ -72,6 +77,7 @@ $('#popover-options').addEventListener('click', async e => {
   e.stopPropagation();
   const rangement = e.target.closest('[data-rangement]');
   if (rangement) { await api.setOption('rangement', rangement.dataset.rangement); refresh(); }
+  if (e.target.closest('#ouvrir-logs')) api.openLogs();
 });
 document.addEventListener('click', async e => {
   $('#popover-options').hidden = true;

@@ -9,6 +9,7 @@ const { Manifest } = require('./utils/manifest');
 const { acquireLock, currentLock } = require('./utils/lock');
 const { TYPES } = require('./render/renderers');
 const { setFontsDir } = require('./render/render');
+const { log, configureLog, logLot } = require('./utils/log');
 
 // Réglages des décors livrés avec l'app (uni, libellé, cadrage C), relevés sur les InDesign existants.
 const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(resources, 'gamme_deco.csv'));
@@ -38,7 +39,7 @@ function prepareBatch({ root, outDir, sources, saisies, inventaire, config, regl
   setFontsDir(path.join(ctx.resources, 'fonts'));
   const manifest = new Manifest(outDir);
   const plan = buildPlan(ctx, { outDir, manifest, ...selection });
-  return { ctx, manifest, plan, scan };
+  return { ctx, manifest, plan, scan, selection };
 }
 
 // Avec le verrou en main, aucun autre lot n'écrit dans ce dossier : les .tmp restants viennent d'un lot interrompu.
@@ -51,17 +52,33 @@ function removeStaleTmp(outDir) {
 }
 
 /** Exécute un plan en prenant le verrou du dossier de sortie (lève une erreur LOCKED si un autre lot y tourne). */
-async function runBatch({ ctx, manifest, plan }, options = {}) {
+async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
   const lock = acquireLock(manifest.outDir, options.user);
+  const t0 = Date.now();
+  const { counts } = plan;
+  const debut = `décos : ${selection.decors?.join(', ') || 'toutes'}  types : ${(selection.types || TYPES).join(',')}` +
+    `  tout refaire : ${selection.force ? 'oui' : 'non'}`;
+  const bilan = `${counts.images} images à produire (${counts.renders} rendus), ${counts.upToDate} à jour, ${counts.blocked} impossibles`;
+  log.info(`Lot lancé dans ${manifest.outDir} — ${debut} — ${bilan}`);
+  logLot(manifest.outDir, `DÉBUT  ${debut}  ${bilan}`);
+  let fin = 'FIN  interrompu par une erreur';
   try {
     removeStaleTmp(manifest.outDir);
-    return await runPlan(ctx, plan, { manifest, ...options });
+    const result = await runPlan(ctx, plan, { manifest, ...options });
+    fin = `FIN  ${result.done - result.errors.length}/${result.total} tâches, ${result.errors.length} erreur${result.errors.length > 1 ? 's' : ''}` +
+      `, ${((Date.now() - t0) / 1000).toFixed(1)} s${result.cancelled ? ' (annulé)' : ''}`;
+    return result;
+  } catch (e) {
+    log.error(e);
+    throw e;
   } finally {
+    log.info(`Lot terminé — ${fin}`);
+    logLot(manifest.outDir, fin);
     lock.release();
   }
 }
 
 module.exports = {
-  prepareBatch, runBatch, runPlan, defaultJobs, defaultReglages, currentLock,
+  prepareBatch, runBatch, runPlan, defaultJobs, defaultReglages, currentLock, log, configureLog,
   scanGamme, readInventaire, writeInventaire, TYPES, FORMATS,
 };

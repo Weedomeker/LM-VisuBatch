@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('api', {
   generate: options => ipcRenderer.invoke('generate', options),
   cancel: () => ipcRenderer.invoke('cancel'),
   openOutput: () => ipcRenderer.invoke('open-output'),
+  openLogs: () => ipcRenderer.invoke('open-logs'),
+  log: (level, text) => ipcRenderer.invoke('log', level, text),
   addSource: () => ipcRenderer.invoke('add-source'),
   onProgress: fn => ipcRenderer.on('progress', (_, e) => fn(e)),
 });
