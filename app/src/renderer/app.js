@@ -347,6 +347,22 @@ async function lancer() {
 }
 $('#generer').addEventListener('click', lancer);
 
+// ---------------------------------------------------------------------------
+// Aide
+
+$('#btn-aide').addEventListener('click', () => {
+  $('#aide-fond').hidden = false;
+  $('#aide-modale').setAttribute('open', '');
+});
+$('#aide-fermer').addEventListener('click', fermerAide);
+$('#aide-fond').addEventListener('click', fermerAide);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#aide-modale').hasAttribute('open')) fermerAide(); });
+
+function fermerAide() {
+  $('#aide-fond').hidden = true;
+  $('#aide-modale').removeAttribute('open');
+}
+
 api.onProgress(e => {
   if (!state.enCours) return;
   const barre = $('#barre'), avance = $('#avance');

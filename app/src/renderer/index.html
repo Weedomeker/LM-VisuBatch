@@ -19,6 +19,7 @@
       <span class="dossier-chemin" id="chemin-sortie">non choisi</span>
       <button class="lien" data-choisir="sortie">Changer</button>
     </div>
+    <button class="btn-aide" id="btn-aide" aria-label="Aide — fichiers requis">?</button>
     <div class="options-wrap">
       <button class="secondaire" id="btn-options">⚙ Options</button>
       <div class="popover-options" id="popover-options" hidden>
@@ -72,6 +73,43 @@
   </aside>
 
   <div class="messages" id="messages" role="status"></div>
+
+  <!-- Modale d'aide -->
+  <div class="aide-fond" id="aide-fond" hidden></div>
+  <dialog class="aide-modale" id="aide-modale">
+    <div class="aide-entete">
+      <strong class="aide-titre">Fichiers requis</strong>
+      <button class="tiroir-fermer" id="aide-fermer" aria-label="Fermer l'aide">✕</button>
+    </div>
+    <div class="aide-corps">
+      <section>
+        <h2>Visuel source</h2>
+        <p>Seuls les JPEG contenant <strong>« au 10ème »</strong> dans le nom sont reconnus comme visuels sources :</p>
+        <pre class="aide-code">&lt;Déco&gt; &lt;largeur&gt;x&lt;hauteur&gt; au 10ème [GAUCHE|DROIT].jpg</pre>
+        <p>Formats : <strong>100×210, 100×255, 125×210, 125×255, 150×210, 150×255</strong></p>
+      </section>
+      <section>
+        <h2>Référence produit</h2>
+        <p>La référence (<code>9xxxxxxx</code>) et la finition (<code>MAT</code> / <code>BRILLANT</code>) sont lues dans le nom de <em>n'importe quel fichier</em> du dossier (PDF, JPEG…) qui contient la bonne dimension.</p>
+      </section>
+      <section>
+        <h2>Visuels sources requis par visuel</h2>
+        <table class="aide-table">
+          <thead><tr><th>Visuel</th><th>Visuel source nécessaire</th></tr></thead>
+          <tbody>
+            <tr><td><strong>A-01</strong> Douche</td><td>Format exact de la référence</td></tr>
+            <tr><td><strong>A-02</strong> Deux panneaux</td><td>100×hauteur (+ GAUCHE/DROIT si diptyque)</td></tr>
+            <tr><td><strong>P</strong> Panneau seul</td><td>Format exact de la référence</td></tr>
+            <tr><td><strong>C</strong> Composition</td><td>150×255 (+ GAUCHE/DROIT si diptyque)</td></tr>
+            <tr><td><strong>II-01</strong> Formats</td><td>Les 6 formats — × GAUCHE et DROIT si diptyque</td></tr>
+            <tr><td><strong>II-02</strong> Profilés</td><td class="aide-statique">Statique — aucun visuel source requis</td></tr>
+            <tr><td><strong>II-03</strong> Kit de pose</td><td class="aide-statique">Statique — aucun visuel source requis</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </dialog>
+
   <script src="app.js"></script>
 </body>
 </html>
