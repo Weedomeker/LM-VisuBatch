@@ -1,0 +1,51 @@
+# Construit les installeurs Windows et macOS (Apple Silicon et Intel).
+# Le binaire de sharp dépend du système : chaque installeur est construit sur une machine de sa plateforme.
+# Lancement : onglet Actions > Installeurs > Run workflow, ou en poussant un tag v* (ex. v0.1.0).
+name: Installeurs
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            cible: --win
+          - os: macos-14 # Apple Silicon (M1, M2…)
+            cible: --mac --arm64
+          - os: macos-15-intel # Intel
+            cible: --mac --x64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      # Vérifie le moteur sur l'exemple (test/exemple à la racine) avant d'empaqueter ; ignoré tant qu'il n'est pas dans le dépôt.
+      - name: Non-régression
+        if: hashFiles('test/exemple/gamme_deco.csv') != ''
+        run: |
+          node src/cli/generate.js ../test/exemple/GAMME --config ../test/exemple/gamme_deco.csv --out test-sortie
+          node test/compare-dossiers.js test-sortie ../test/exemple/sortie 0 0.5
+      - run: npx electron-builder ${{ matrix.cible }} --publish never
+        env:
+          # Pas de certificat : installeurs non signés (voir LISEZMOI).
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installeur-${{ matrix.os }}
+          path: |
+            app/dist/*.exe
+            app/dist/*.dmg
+          if-no-files-found: error

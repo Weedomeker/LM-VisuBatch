@@ -1,0 +1,52 @@
+{
+  "source": "PALMERAIE 94953523-II-01",
+  "page": "page.jpg",
+  "cotes": [
+    "GAUCHE",
+    "DROIT"
+  ],
+  "vignettes": [
+    {
+      "format": "100x210",
+      "left": 533,
+      "top": 536,
+      "width": 710,
+      "height": 746
+    },
+    {
+      "format": "125x210",
+      "left": 1377,
+      "top": 535,
+      "width": 890,
+      "height": 748
+    },
+    {
+      "format": "150x210",
+      "left": 2397,
+      "top": 535,
+      "width": 1069,
+      "height": 748
+    },
+    {
+      "format": "100x255",
+      "left": 533,
+      "top": 1485,
+      "width": 710,
+      "height": 905
+    },
+    {
+      "format": "125x255",
+      "left": 1377,
+      "top": 1484,
+      "width": 889,
+      "height": 907
+    },
+    {
+      "format": "150x255",
+      "left": 2399,
+      "top": 1485,
+      "width": 1066,
+      "height": 906
+    }
+  ]
+}

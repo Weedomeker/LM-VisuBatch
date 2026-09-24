@@ -1,0 +1,66 @@
+{
+  "source": "LEAF 100x210.psd",
+  "width": 4000,
+  "height": 4000,
+  "layers": [
+    {
+      "type": "image",
+      "name": "Arrière-plan",
+      "hidden": false,
+      "left": 0,
+      "top": 0,
+      "blendMode": "normal",
+      "opacity": 1,
+      "file": "calque-arriere-plan.png"
+    },
+    {
+      "type": "panel",
+      "name": "Panneau 100x210",
+      "hidden": false,
+      "left": 1632,
+      "top": 859,
+      "blendMode": "normal",
+      "opacity": 1,
+      "position": "unique",
+      "quad": [
+        [
+          1631.4847959578822,
+          964.9695919157649
+        ],
+        [
+          2639.3838491639985,
+          858.9665204158266
+        ],
+        [
+          2639.5357760845145,
+          3302.8928083543306
+        ],
+        [
+          1631.6476458615023,
+          3183.018721385372
+        ]
+      ],
+      "sourceSize": [
+        1193,
+        2506
+      ],
+      "coverage": "couverture-panneau-100x210.png"
+    },
+    {
+      "type": "image",
+      "name": "Effets panneau OF170",
+      "hidden": false,
+      "left": 1631,
+      "top": 858,
+      "blendMode": "multiply",
+      "opacity": 1,
+      "blendIfGray": [
+        0,
+        0,
+        170,
+        255
+      ],
+      "file": "calque-effets-panneau-of170.png"
+    }
+  ]
+}

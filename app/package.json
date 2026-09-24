@@ -1,0 +1,65 @@
+{
+  "name": "visuels-web",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Génération par lot des visuels web des panneaux de douche",
+  "main": "src/main/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "generate": "node src/cli/generate.js",
+    "inventaire": "node src/cli/inventaire.js",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac"
+  },
+  "dependencies": {
+    "ag-psd": "^31.0.2",
+    "sharp": "^0.35.4",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "electron-reload": "^2.0.0-alpha.1"
+  },
+  "author": "Deco-K-IN",
+  "build": {
+    "appId": "fr.decokin.visuels-web",
+    "productName": "Visuels web",
+    "asar": false,
+    "files": [
+      "package.json",
+      "src/**",
+      "resources/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "artifactName": "Visuels-web-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "Visuels web"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.graphics-design"
+    }
+  },
+  "allowScripts": {
+    "electron-winstaller@5.4.0": true
+  }
+}

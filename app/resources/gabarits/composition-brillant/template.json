@@ -1,0 +1,70 @@
+{
+  "source": "TOSCANA COMPOSITION BRILLANT.psd",
+  "width": 4000,
+  "height": 4000,
+  "layers": [
+    {
+      "type": "image",
+      "name": "DIBOND",
+      "hidden": false,
+      "left": 465,
+      "top": 1089,
+      "blendMode": "normal",
+      "opacity": 1,
+      "file": "calque-dibond.png"
+    },
+    {
+      "type": "panel",
+      "name": "Impression",
+      "hidden": false,
+      "left": 465,
+      "top": 923,
+      "blendMode": "normal",
+      "opacity": 1,
+      "position": "unique",
+      "quad": [
+        [
+          464.8636102016324,
+          1813.685901224259
+        ],
+        [
+          1995.215757738733,
+          923.377928802052
+        ],
+        [
+          3534.5670952137702,
+          1813.9014678079782
+        ],
+        [
+          2005.4745002042298,
+          2705.075275616423
+        ]
+      ],
+      "sourceSize": [
+        3262,
+        3262
+      ],
+      "coverage": "couverture-impression.png"
+    },
+    {
+      "type": "image",
+      "name": "Vernis",
+      "hidden": false,
+      "left": 470,
+      "top": 713,
+      "blendMode": "normal",
+      "opacity": 1,
+      "file": "calque-vernis.png"
+    },
+    {
+      "type": "image",
+      "name": "Texture brillante",
+      "hidden": false,
+      "left": 471,
+      "top": 848,
+      "blendMode": "normal",
+      "opacity": 0.8,
+      "file": "calque-texture-brillante.png"
+    }
+  ]
+}
