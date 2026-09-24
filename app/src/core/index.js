@@ -25,14 +25,14 @@ const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(
  * @param {string} [o.config] gamme_deco.csv à la place des réglages livrés
  * @param {object[]} [o.reglages] réglages des décors (prioritaires sur config)
  * @param {object} [o.scan] résultat de scanGamme déjà calculé
- * Les autres options (types, decors, refs, force, rangement) sont celles de buildPlan.
+ * Les autres options (types, deco, refs, force, rangement) sont celles de buildPlan.
  */
 function prepareBatch({ root, outDir, sources, saisies, inventaire, config, reglages, resources = DEFAULT_RESOURCES, cacheDir, scan, ...selection }) {
   if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies });
   const ctx = createContext({
     root,
     rows: scan ? scan.rows : readInventaire(inventaire),
-    decors: reglages || (config ? readDecors(config) : defaultReglages(resources)),
+    deco: reglages || (config ? readDecors(config) : defaultReglages(resources)),
     resources,
     cacheDir: cacheDir || path.join(outDir, '.cache'),
   });
@@ -56,7 +56,7 @@ async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
   const lock = acquireLock(manifest.outDir, options.user);
   const t0 = Date.now();
   const { counts } = plan;
-  const debut = `décos : ${selection.decors?.join(', ') || 'toutes'}  types : ${(selection.types || TYPES).join(',')}` +
+  const debut = `décos : ${selection.deco?.join(', ') || 'toutes'}  types : ${(selection.types || TYPES).join(',')}` +
     `  tout refaire : ${selection.force ? 'oui' : 'non'}`;
   const bilan = `${counts.images} images à produire (${counts.renders} rendus), ${counts.upToDate} à jour, ${counts.blocked} impossibles`;
   log.info(`Lot lancé dans ${manifest.outDir} — ${debut} — ${bilan}`);

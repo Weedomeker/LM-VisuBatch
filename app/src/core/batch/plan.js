@@ -12,13 +12,13 @@ const { fingerprint } = require('../utils/manifest');
  * @param {string} options.outDir
  * @param {import('./manifest').Manifest} options.manifest
  * @param {string[]} [options.types]
- * @param {string[]} [options.decors] dossiers ou noms de décor (insensible à la casse)
+ * @param {string[]} [options.deco] dossiers ou noms de décor (insensible à la casse)
  * @param {string[]} [options.refs]
  * @param {boolean} [options.force] ignore le manifeste
  * @param {'plat'|'decor'} [options.rangement] images toutes dans outDir, ou un sous-dossier par décor
  */
-function buildPlan(ctx, { outDir, manifest, types = TYPES, decors, refs, force = false, rangement = 'plat' }) {
-  const onlyDecors = decors?.map(s => s.toUpperCase());
+function buildPlan(ctx, { outDir, manifest, types = TYPES, deco, refs, force = false, rangement = 'plat' }) {
+  const onlyDeco = deco?.map(s => s.toUpperCase());
   const byKey = new Map();
   const blocked = [];
   const sansRef = [];
@@ -29,7 +29,7 @@ function buildPlan(ctx, { outDir, manifest, types = TYPES, decors, refs, force =
 
   for (const r of ctx.rows) {
     if (refs && !refs.includes(r.ref)) continue;
-    if (onlyDecors && !onlyDecors.includes(r.dossier.toUpperCase()) && !onlyDecors.includes(r.decor.toUpperCase())) continue;
+    if (onlyDeco && !onlyDeco.includes(r.dossier.toUpperCase()) && !onlyDeco.includes(r.decor.toUpperCase())) continue;
     if (!r.ref) { sansRef.push(r.motif); continue; }
     for (const type of types) {
       const def = RENDERERS[type];

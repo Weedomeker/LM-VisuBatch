@@ -2,6 +2,14 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.3.5] — 2026-09-24
+
+### Corrigé
+- **macOS** : les dossiers de la GAMME aux noms accentués (ex. « CRÈME ») étaient ignorés lors de la recherche des unis.
+
+### Modifié
+- Renommage interne : `decors` → `deco` dans toute la base de code (variables, propriétés, HTML, CSS, CLI `--deco`).
+
 ## [0.3.4] — 2026-09-24
 
 ### Ajouté

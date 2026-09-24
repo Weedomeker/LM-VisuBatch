@@ -80,9 +80,14 @@ jobs:
             echo
             echo "| Poste | Fichier | Taille |"
             echo "|-------|---------|--------|"
-            echo "| Windows | \`LM-VisuBatch-$VERSION-win-x64.exe\` | $(taille LM-VisuBatch-$VERSION-win-x64.exe) |"
-            echo "| Mac Apple Silicon (M1, M2, M3…) | \`LM-VisuBatch-$VERSION-mac-arm64.dmg\` | $(taille LM-VisuBatch-$VERSION-mac-arm64.dmg) |"
-            echo "| Mac Intel | \`LM-VisuBatch-$VERSION-mac-x64.dmg\` | $(taille LM-VisuBatch-$VERSION-mac-x64.dmg) |"
+            for row in \
+              "Windows|LM-VisuBatch-$VERSION-win-x64.exe" \
+              "Mac Apple Silicon (M1, M2, M3…)|LM-VisuBatch-$VERSION-mac-arm64.dmg" \
+              "Mac Intel|LM-VisuBatch-$VERSION-mac-x64.dmg"
+            do
+              IFS='|' read -r label fichier <<< "$row"
+              echo "| $label | \`$fichier\` | $(taille "$fichier") |"
+            done
             echo
             echo "Les installeurs ne sont pas signés : une alerte s'affiche la première fois."
             echo "- **Windows** : « Informations complémentaires » puis « Exécuter quand même ». Installation sans droits administrateur."

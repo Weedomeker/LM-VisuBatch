@@ -64,7 +64,7 @@ function analyse() {
     if (!list.includes(`${b.type} : ${b.message}`)) list.push(`${b.type} : ${b.message}`);
     blockedBy.set(b.dossier, list);
   }
-  const decors = scan.decors.filter(d => d.depot || d.formats.some(f => f.motif || f.refs.length)).map(d => ({
+  const deco = scan.deco.filter(d => d.depot || d.formats.some(f => f.motif || f.refs.length)).map(d => ({
     dossier: d.dossier,
     decor: d.decor,
     chemin: path.join(d.base, d.dossier),
@@ -76,15 +76,15 @@ function analyse() {
     impossibles: blockedBy.get(d.dossier) ?? [],
     reglage: reglages.find(r => r.dossier === d.dossier) ?? {},
   })).sort((a, b) => a.dossier.localeCompare(b.dossier, 'fr'));
-  log.info(`Analyse de ${settings.gamme} : ${decors.length} décos, ${scan.problems.length} problèmes` +
+  log.info(`Analyse de ${settings.gamme} : ${deco.length} décos, ${scan.problems.length} problèmes` +
     (plan ? `, ${plan.counts.images} images à faire, ${plan.counts.blocked} impossibles` : ', pas de dossier de sortie') +
     ` (${Date.now() - t0} ms)`);
   for (const p of scan.problems) log.debug(`Problème : ${p}`);
   for (const b of plan?.blocked ?? []) log.debug(`Impossible : ${b.dossier} ${b.ref} ${b.type} : ${b.message}`);
-  const unis = scan.decors.map(d => d.dossier.match(/^(\d{3})\s+(.*)$/)).filter(Boolean).map(m => ({ code: m[1], nom: m[2] }));
+  const unis = scan.deco.map(d => d.dossier.match(/^(\d{3})\s+(.*)$/)).filter(Boolean).map(m => ({ code: m[1], nom: m[2] }));
   return {
     settings,
-    decors,
+    deco,
     unis,
     counts: plan?.counts ?? null,
     lock: settings.outDir ? core.currentLock(settings.outDir) : null,
@@ -101,7 +101,7 @@ function prepare({ dossiers, force = false }) {
     cacheDir: cacheDir(),
     types: settings.types,
     rangement: settings.rangement,
-    decors: dossiers,
+    deco: dossiers,
     force,
   });
 }
@@ -115,7 +115,7 @@ function importCsv(file) {
   const unknown = new Set();
   for (const r of rows) {
     const ref = (r.ref || '').trim();
-    const d = scan?.decors.find(x => x.dossier === r.dossier || x.decor.toUpperCase() === (r.decor || '').toUpperCase());
+    const d = scan?.deco.find(x => x.dossier === r.dossier || x.decor.toUpperCase() === (r.decor || '').toUpperCase());
     if (!/^9\d{7}$/.test(ref) || !r.largeur || !r.hauteur) continue;
     if (!d) { unknown.add(r.dossier || r.decor); continue; }
     const dir = path.join(d.base, d.dossier);

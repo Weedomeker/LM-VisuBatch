@@ -112,19 +112,19 @@ function scanGamme(root, { sources = [], saisies = {} } = {}) {
     const dir = path.basename(src).normalize('NFC');
     entries.set(dir, { base: path.dirname(src), dir, depot: true });
   }
-  const decors = [];
+  const deco = [];
   for (const { base, dir, depot } of entries.values()) {
     try {
-      decors.push({ ...scanDecor(base, dir, saisies[path.join(base, dir)]), depot });
+      deco.push({ ...scanDecor(base, dir, saisies[path.join(base, dir)]), depot });
     } catch (e) {
-      decors.push({ dossier: dir, base, decor: dir, formats: [], rows: [], problems: [`${dir} : illisible (${e.message})`], depot });
+      deco.push({ dossier: dir, base, decor: dir, formats: [], rows: [], problems: [`${dir} : illisible (${e.message})`], depot });
     }
   }
   return {
-    decors,
-    rows: decors.flatMap(d => d.rows),
-    problems: decors.flatMap(d => d.problems),
-    sansMotif: decors.filter(d => !d.rows.length).map(d => d.dossier),
+    deco,
+    rows: deco.flatMap(d => d.rows),
+    problems: deco.flatMap(d => d.problems),
+    sansMotif: deco.filter(d => !d.rows.length).map(d => d.dossier),
   };
 }
 

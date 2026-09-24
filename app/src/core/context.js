@@ -10,19 +10,19 @@ const DEFAULT_RESOURCES = path.join(__dirname, '..', '..', 'resources');
  * @param {object} data
  * @param {string} data.root dossier GAMME
  * @param {object[]} data.rows lignes d'inventaire
- * @param {object[]} [data.decors] lignes de gamme_deco.csv
+ * @param {object[]} [data.deco] lignes de gamme_deco.csv
  * @param {string} [data.resources] dossier des gabarits, statiques et polices
  * @param {string} data.cacheDir dossier inscriptible (unis extraits des PSD)
  */
-function createContext({ root, rows, decors = [], resources = DEFAULT_RESOURCES, cacheDir }) {
+function createContext({ root, rows, deco = [], resources = DEFAULT_RESOURCES, cacheDir }) {
   let dirs;
   return {
-    root, rows, decors, resources, cacheDir,
-    decorConfig: new Map(decors.map(r => [r.dossier, r])),
+    root, rows, deco, resources, cacheDir,
+    decorConfig: new Map(deco.map(r => [r.dossier, r])),
     // Dossiers de la gamme, lus une seule fois (recherche des unis « 620 VERT… »).
-    get dirs() { return dirs ??= fs.readdirSync(root); },
+    get dirs() { return dirs ??= fs.readdirSync(root).map(n => n.normalize('NFC')); },
     gabarit: name => path.join(resources, 'gabarits', name),
-    toData: () => ({ root, rows, decors, resources, cacheDir }),
+    toData: () => ({ root, rows, deco, resources, cacheDir }),
   };
 }
 

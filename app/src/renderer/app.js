@@ -29,8 +29,8 @@ async function refresh() {
   }
   state.analyse = false;
   const d = state.data;
-  if (!d?.decors) return renderLot();
-  const noms = new Set(d.decors.map(x => x.dossier));
+  if (!d?.deco) return renderLot();
+  const noms = new Set(d.deco.map(x => x.dossier));
   for (const c of state.coches) if (!noms.has(c)) state.coches.delete(c);
   if (!noms.has(state.courant)) state.courant = null;
   renderBarre();
@@ -98,10 +98,10 @@ const incomplet = d => d.impossibles.length > 0 || d.problems.length > 0;
 function renderListe() {
   for (const b of document.querySelectorAll('[data-filtre]')) b.setAttribute('aria-checked', b.dataset.filtre === state.filtre);
   const q = state.recherche.trim().toLowerCase();
-  const visibles = state.data.decors.filter(d =>
+  const visibles = state.data.deco.filter(d =>
     (!q || d.dossier.toLowerCase().includes(q)) &&
     (state.filtre === 'tous' || (state.filtre === 'afaire' && d.stats.images > 0) || (state.filtre === 'incomplets' && incomplet(d))));
-  $('#decors').innerHTML = visibles.map(d => {
+  $('#deco').innerHTML = visibles.map(d => {
     const badges = [];
     if (d.stats.images > 0) badges.push(`<span class="badge badge-afaire">${plural(d.stats.images, 'image')} à faire</span>`);
     if (d.stats.blocked > 0) badges.push(`<span class="badge badge-bloque">${plural(d.stats.blocked, 'impossible')}</span>`);
@@ -116,7 +116,7 @@ function renderListe() {
   }).join('') || '<li class="aide">Aucune déco</li>';
 }
 
-$('#decors').addEventListener('click', e => {
+$('#deco').addEventListener('click', e => {
   const li = e.target.closest('li[data-dossier]');
   if (!li) return;
   if (e.target.matches('input[type="checkbox"]')) {
@@ -131,7 +131,7 @@ $('#decors').addEventListener('click', e => {
 });
 $('#recherche').addEventListener('input', e => { state.recherche = e.target.value; renderListe(); });
 $('#cocher-afaire').addEventListener('click', () => {
-  for (const d of state.data?.decors ?? []) if (d.stats.images > 0) state.coches.add(d.dossier);
+  for (const d of state.data?.deco ?? []) if (d.stats.images > 0) state.coches.add(d.dossier);
   renderListe(); renderLot();
 });
 $('#tout-decocher').addEventListener('click', () => { state.coches.clear(); renderListe(); renderLot(); });
@@ -140,7 +140,7 @@ $('#ajouter-source').addEventListener('click', async () => {
   for (const m of msgs) message(m);
   if (msgs.some(m => m.includes('ajouté'))) {
     await refresh();
-    const nouveau = state.data?.decors?.find(d => d.depot && msgs.some(m => m.startsWith(`${d.dossier} ajouté`)));
+    const nouveau = state.data?.deco?.find(d => d.depot && msgs.some(m => m.startsWith(`${d.dossier} ajouté`)));
     if (nouveau) openTiroir(nouveau.dossier);
   }
 });
@@ -154,14 +154,14 @@ document.addEventListener('drop', async e => {
   const messages = await api.drop(e.dataTransfer.files);
   for (const m of messages) message(m);
   await refresh();
-  const nouveau = state.data?.decors?.find(d => d.depot && messages.some(m => m.startsWith(`${d.dossier} ajouté`)));
+  const nouveau = state.data?.deco?.find(d => d.depot && messages.some(m => m.startsWith(`${d.dossier} ajouté`)));
   if (nouveau) openTiroir(nouveau.dossier);
 });
 
 // ---------------------------------------------------------------------------
 // Fiche du décor
 
-const courant = () => state.data?.decors?.find(d => d.dossier === state.courant);
+const courant = () => state.data?.deco?.find(d => d.dossier === state.courant);
 
 function openTiroir(dossier) {
   state.courant = dossier;
@@ -297,12 +297,12 @@ function renderLot() {
   if (state.enCours) return;
   const d = state.data;
   if (state.analyse) { resume.textContent = 'Analyse de la gamme…'; bouton.disabled = true; return; }
-  if (!d?.decors) { resume.textContent = ''; bouton.disabled = true; return; }
+  if (!d?.deco) { resume.textContent = ''; bouton.disabled = true; return; }
   if (!d.settings.outDir) { resume.innerHTML = 'Choisissez un <strong>dossier de sortie</strong> pour générer.'; bouton.disabled = true; return; }
   if (d.lock) {
     resume.innerHTML = `Lot en cours dans ce dossier par <strong>${esc(d.lock.user)}</strong> (${esc(d.lock.host)})`;
   }
-  const choisis = d.decors.filter(x => state.coches.has(x.dossier));
+  const choisis = d.deco.filter(x => state.coches.has(x.dossier));
   const refaire = $('#tout-refaire').checked;
   const images = choisis.reduce((n, x) => n + x.stats.images + (refaire ? x.stats.upToDate : 0), 0);
   const impossibles = choisis.reduce((n, x) => n + x.stats.blocked, 0);
