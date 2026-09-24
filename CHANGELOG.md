@@ -2,6 +2,13 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.3.2] — 2026-09-24
+
+### Modifié
+- Installeurs allégés d'un tiers (Windows : 350 → 236 Mo) : les images de référence Photoshop inutilisées
+  et les traductions de Chromium autres que français et anglais ne sont plus livrées. Rendus inchangés.
+- À la première génération après la mise à jour, les images A-01 et A-02 sont recalculées une fois.
+
 ## [0.3.1] — 2026-09-24
 
 ### Modifié
