@@ -1,6 +1,6 @@
 {
   "name": "visuels-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Génération par lot des visuels web des panneaux de douche",
   "main": "src/main/main.js",
