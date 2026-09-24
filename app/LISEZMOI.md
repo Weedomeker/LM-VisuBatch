@@ -1,4 +1,4 @@
-# Visuels web
+# LM VisuBatch
 
 Application de bureau (Windows, macOS) qui génère les 7 visuels web de chaque référence de panneau
 à partir du dossier GAMME. La GAMME est seulement lue ; les images vont dans le dossier de sortie choisi.
@@ -7,12 +7,12 @@ Application de bureau (Windows, macOS) qui génère les 7 visuels web de chaque 
 
 Les installeurs ne sont pas signés (pas de certificat éditeur) : le système affiche un avertissement la première fois.
 
-- **Windows** : lancer `Visuels-web-…-win-x64.exe`. Si « Windows a protégé votre ordinateur » s'affiche :
+- **Windows** : lancer `LM-VisuBatch-…-win-x64.exe`. Si « Windows a protégé votre ordinateur » s'affiche :
   « Informations complémentaires » puis « Exécuter quand même ». L'app s'installe pour l'utilisateur, sans droits administrateur.
 - **macOS** : ouvrir le `.dmg` (`arm64` pour les Mac M1/M2/M3…, `x64` pour les Mac Intel) et glisser l'app
   dans Applications. Au premier lancement : clic droit sur l'app > Ouvrir > Ouvrir.
   Si macOS indique que l'app « est endommagée », lancer dans le Terminal :
-  `xattr -cr "/Applications/Visuels web.app"`
+  `xattr -cr "/Applications/LM VisuBatch.app"`
 
 ## Développer
 

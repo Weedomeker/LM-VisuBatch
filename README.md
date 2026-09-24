@@ -46,12 +46,12 @@ Les images déjà à jour ne sont pas recalculées — seul ce qui a changé est
 
 Les installeurs ne sont pas signés (pas de certificat éditeur) : une alerte s'affiche la première fois.
 
-**Windows** — lancer `Visuels-web-…-win-x64.exe`.  
+**Windows** — lancer `LM-VisuBatch-…-win-x64.exe`.  
 Si « Windows a protégé votre ordinateur » s'affiche : cliquer sur « Informations complémentaires » puis « Exécuter quand même ». L'app s'installe sans droits administrateur.
 
 **macOS** — ouvrir le `.dmg` (`arm64` pour Mac M1/M2/M3, `x64` pour Mac Intel) et glisser l'app dans Applications.  
 Au premier lancement : clic droit > Ouvrir > Ouvrir.  
-Si macOS indique que l'app « est endommagée » : `xattr -cr "/Applications/Visuels web.app"` dans le Terminal.
+Si macOS indique que l'app « est endommagée » : `xattr -cr "/Applications/LM VisuBatch.app"` dans le Terminal.
 
 ---
 

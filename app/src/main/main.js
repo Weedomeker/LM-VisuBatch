@@ -200,7 +200,7 @@ function createWindow() {
     height: 880,
     minWidth: 1040,
     minHeight: 680,
-    title: 'Visuels web',
+    title: 'LM VisuBatch',
     backgroundColor: '#e9ecea',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
@@ -279,16 +279,33 @@ if (process.env.VISUELS_USERDATA) app.setPath('userData', process.env.VISUELS_US
 // Plantage du processus principal : consigné, puis signalé comme le fait Electron par défaut.
 const crash = e => {
   log.error(e instanceof Error ? e : new Error(String(e)));
-  dialog.showErrorBox('Erreur inattendue', `${e?.stack || e}
-
-Détails dans les logs : ${logsDir()}`);
+  dialog.showErrorBox('Erreur inattendue', `${e?.stack || e}\n\nDétails dans les logs : ${logsDir()}`);
 };
 process.on('uncaughtException', crash);
 process.on('unhandledRejection', crash);
 
+// L'app s'appelait « Visuels web » (installée) ou « visuels-web » (npm start) : au premier lancement sous le nouveau nom,
+// on reprend ses réglages et ses logs. Rien n'est supprimé de l'ancien dossier.
+function migrateUserData() {
+  if (process.env.VISUELS_USERDATA || fs.existsSync(settingsFile())) return null;
+  for (const name of ['Visuels web', 'visuels-web']) {
+    const old = path.join(app.getPath('appData'), name);
+    if (!fs.existsSync(path.join(old, 'reglages.json'))) continue;
+    fs.mkdirSync(app.getPath('userData'), { recursive: true });
+    fs.copyFileSync(path.join(old, 'reglages.json'), settingsFile());
+    if (fs.existsSync(path.join(old, 'logs'))) fs.cpSync(path.join(old, 'logs'), logsDir(), { recursive: true });
+    return old;
+  }
+  return null;
+}
+
 app.whenReady().then(() => {
+  let migrated = null;
+  try { migrated = migrateUserData(); } catch (e) { migrated = e; }
   core.configureLog({ dir: logsDir() });
-  log.info(`Démarrage de Visuels web ${app.getVersion()} — ${os.type()} ${os.release()} ${process.arch}, Electron ${process.versions.electron}`);
+  if (migrated instanceof Error) log.warn(`Reprise des réglages de l'ancienne version impossible : ${migrated.message}`);
+  else if (migrated) log.info(`Réglages et logs repris de l'ancienne version : ${migrated}`);
+  log.info(`Démarrage de ${app.getName()} ${app.getVersion()} — ${os.type()} ${os.release()} ${process.arch}, Electron ${process.versions.electron}`);
   loadSettings();
   log.info(`GAMME : ${settings.gamme || 'non choisie'} — sortie : ${settings.outDir || 'non choisie'}`);
   createWindow();

@@ -1,6 +1,7 @@
 {
-  "name": "visuels-web",
+  "name": "LM-VisuBatch",
   "version": "0.3.0",
+  "productName": "LM VisuBatch",
   "private": true,
   "description": "Génération par lot des visuels web des panneaux de douche",
   "main": "src/main/main.js",
@@ -25,8 +26,7 @@
   },
   "author": "Deco-K-IN",
   "build": {
-    "appId": "fr.decokin.visuels-web",
-    "productName": "Visuels web",
+    "appId": "fr.decokin.LM-VisuBatch",
     "asar": false,
     "files": [
       "package.json",
@@ -36,7 +36,7 @@
     "directories": {
       "output": "dist"
     },
-    "artifactName": "Visuels-web-${version}-${os}-${arch}.${ext}",
+    "artifactName": "LM-VisuBatch-${version}-${os}-${arch}.${ext}",
     "win": {
       "target": [
         {
@@ -50,7 +50,7 @@
     "nsis": {
       "oneClick": true,
       "perMachine": false,
-      "shortcutName": "Visuels web"
+      "shortcutName": "LM VisuBatch"
     },
     "mac": {
       "target": [
