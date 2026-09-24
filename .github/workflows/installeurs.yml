@@ -1,10 +1,16 @@
 # Construit les installeurs Windows et macOS (Apple Silicon et Intel).
 # Le binaire de sharp dépend du système : chaque installeur est construit sur une machine de sa plateforme.
 # Lancement : onglet Actions > Installeurs > Run workflow, ou en poussant un tag v* (ex. v0.1.0).
+# Un tag v* publie aussi la release GitHub (notes tirées du CHANGELOG) ; en lancement manuel, seulement si « release » est rempli.
 name: Installeurs
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: Tag existant à publier en release (ex. v0.3.4), vide pour ne construire que les installeurs
+        required: false
+        default: ''
   push:
     tags: ['v*']
 
@@ -49,3 +55,44 @@ jobs:
             app/dist/*.exe
             app/dist/*.dmg
           if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.release != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.release || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: installeurs
+          merge-multiple: true
+      - name: Notes de version
+        run: |
+          VERSION="${TAG#v}"
+          taille() { echo "$(( $(stat -c %s installeurs/"$1") / 1048576 )) Mo"; }
+          {
+            echo "## Installation"
+            echo
+            echo "| Poste | Fichier | Taille |"
+            echo "|-------|---------|--------|"
+            echo "| Windows | \`LM-VisuBatch-$VERSION-win-x64.exe\` | $(taille LM-VisuBatch-$VERSION-win-x64.exe) |"
+            echo "| Mac Apple Silicon (M1, M2, M3…) | \`LM-VisuBatch-$VERSION-mac-arm64.dmg\` | $(taille LM-VisuBatch-$VERSION-mac-arm64.dmg) |"
+            echo "| Mac Intel | \`LM-VisuBatch-$VERSION-mac-x64.dmg\` | $(taille LM-VisuBatch-$VERSION-mac-x64.dmg) |"
+            echo
+            echo "Les installeurs ne sont pas signés : une alerte s'affiche la première fois."
+            echo "- **Windows** : « Informations complémentaires » puis « Exécuter quand même ». Installation sans droits administrateur."
+            echo "- **macOS** : glisser l'app dans Applications, puis au premier lancement Réglages Système > Confidentialité et sécurité > « Ouvrir quand même » (avant macOS 15 : clic droit > Ouvrir). Si l'app « est endommagée » : \`xattr -cr \"/Applications/LM VisuBatch.app\"\` dans le Terminal."
+            echo
+            echo "## Nouveautés"
+            # Section de la version dans le CHANGELOG, sans son titre.
+            awk -v v="$VERSION" 'index($0, "## [" v "]") == 1 { on = 1; next } /^## \[/ { on = 0 } on' CHANGELOG.md
+            echo "Historique complet : [CHANGELOG](https://github.com/${{ github.repository }}/blob/dev/CHANGELOG.md)"
+          } > notes.md
+          cat notes.md
+      - name: Release
+        run: gh release create "$TAG" installeurs/* --verify-tag --title "LM VisuBatch ${TAG#v}" --notes-file notes.md
