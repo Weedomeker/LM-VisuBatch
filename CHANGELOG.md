@@ -2,6 +2,19 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.3.4] — 2026-09-24
+
+### Ajouté
+- Icône de l'application (exécutable, installeur, fenêtre, Mac).
+
+### Corrigé
+- **macOS** : app signée ad hoc, sans quoi les Mac Apple Silicon la refusaient (« endommagée »).
+- **macOS** : décors aux noms accentués reconnus même si macOS rend les accents sous forme décomposée.
+
+### Modifié
+- **macOS** : menu minimal (à propos, édition, fenêtre) à la place du menu d'Electron.
+- Consignes d'ouverture sous macOS 15 (Réglages Système > Confidentialité et sécurité > « Ouvrir quand même »).
+
 ## [0.3.3] — 2026-09-24
 
 ### Corrigé
