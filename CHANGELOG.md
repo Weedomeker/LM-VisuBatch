@@ -2,6 +2,16 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.3.3] — 2026-09-24
+
+### Corrigé
+- L'interface affiche enfin la police Montserrat (elle retombait sur la police système).
+
+### Modifié
+- Installeurs allégés d'environ 11 Mo : images des gabarits recompressées sans perte (rendus identiques)
+  et calque inutilisé retiré.
+- À la première génération après la mise à jour, les images A-01, A-02 et C sont recalculées une fois.
+
 ## [0.3.2] — 2026-09-24
 
 ### Modifié
