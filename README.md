@@ -61,6 +61,7 @@ Si macOS indique que l'app « est endommagée » : `xattr -cr "/Applications/Vis
 cd app
 npm install
 npm start              # lancer l'app
+npm run dev            # lancer l'app avec rechargement automatique à chaque modification
 npm run dist:win       # compiler l'installeur Windows (dans app/dist/)
 ```
 

@@ -7,6 +7,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "electron .",
+    "dev": "electron . --dev",
     "generate": "node src/cli/generate.js",
     "inventaire": "node src/cli/inventaire.js",
     "dist:win": "electron-builder --win",
@@ -19,7 +20,8 @@
   },
   "devDependencies": {
     "electron": "^44.4.5",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "electron-reload": "^2.0.0-alpha.1"
   },
   "author": "Deco-K-IN",
   "build": {

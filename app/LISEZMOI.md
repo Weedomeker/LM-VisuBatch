@@ -19,6 +19,7 @@ Les installeurs ne sont pas signés (pas de certificat éditeur) : le système a
 ```
 npm install
 npm start                    # l'application
+npm run dev                  # l'application, rechargée à chaque modification du code
 npm run generate -- "<GAMME>" --out sortie [--dry-run]   # le moteur en ligne de commande
 npm run dist:win             # installeur Windows (dans dist/)
 ```

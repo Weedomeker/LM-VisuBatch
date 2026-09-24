@@ -263,6 +263,15 @@ function createWindow() {
   });
 }
 
+// Développement (npm run dev) : l'interface se recharge à chaque modification ; l'app redémarre si le processus
+// principal ou le moteur change (ils ne sont chargés qu'au démarrage). electron-reload n'est pas livré dans l'installeur.
+if (process.argv.includes('--dev') && !app.isPackaged) {
+  const reload = require('electron-reload');
+  const src = path.join(__dirname, '..');
+  reload([path.join(src, 'main'), path.join(src, 'core')], { electron: process.execPath, appArgv: ['--dev'], forceHardReset: true });
+  reload(path.join(src, 'renderer'));
+}
+
 // Développement : VISUELS_USERDATA isole les réglages ; VISUELS_CAPTURE=<png> exécute VISUELS_SCRIPT dans la page,
 // enregistre une capture de la fenêtre puis quitte.
 if (process.env.VISUELS_USERDATA) app.setPath('userData', process.env.VISUELS_USERDATA);
