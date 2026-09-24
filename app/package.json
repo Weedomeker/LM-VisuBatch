@@ -31,7 +31,12 @@
     "files": [
       "package.json",
       "src/**",
-      "resources/**"
+      "resources/**",
+      "!resources/gabarits/{douche,inspiration}-*/reference-photoshop.png"
+    ],
+    "electronLanguages": [
+      "fr",
+      "en-US"
     ],
     "directories": {
       "output": "dist"
