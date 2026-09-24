@@ -69,7 +69,7 @@ L'installeur macOS se compile sur un Mac (`npm run dist:mac`) ou via GitHub Acti
 
 **Test de non-régression :**
 ```bash
-node app/src/cli/generate.js "test/exemple/GAMME" --config test/exemple/decors.csv --out <sortie>
+node app/src/cli/generate.js "test/exemple/GAMME" --config test/exemple/gamme_deco.csv --out <sortie>
 node app/test/compare-dossiers.js <sortie> test/exemple/sortie
 # doit afficher 0 image différente
 ```

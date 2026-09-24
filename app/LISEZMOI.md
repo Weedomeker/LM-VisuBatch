@@ -25,7 +25,7 @@ npm run dist:win             # installeur Windows (dans dist/)
 ```
 
 L'installeur macOS se construit sur un Mac (`npm run dist:mac`) ou par GitHub Actions
-(`.github/workflows/installeurs.yml` : onglet Actions > Installeurs > Run workflow).
+(`.github/workflows/installeurs.yml` à la racine du dépôt : onglet Actions > Installeurs > Run workflow).
 
 Non-régression : `node test/compare-dossiers.js <sortie> test/exemple/sortie` doit indiquer 0 image différente
-pour `node cli/generate.js test/exemple/GAMME --config test/exemple/decors.csv --out <sortie>`.
+pour `node cli/generate.js test/exemple/GAMME --config test/exemple/gamme_deco.csv --out <sortie>`.
