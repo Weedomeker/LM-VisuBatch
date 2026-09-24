@@ -2,6 +2,17 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.3.1] — 2026-09-24
+
+### Modifié
+- L'app s'appelle désormais **LM VisuBatch** : installeurs `LM-VisuBatch-<version>-…`, raccourci, fenêtre,
+  dossier des réglages et logs `%APPDATA%\LM VisuBatch`. Les réglages de « Visuels web » sont repris au premier lancement.
+- **Windows** : l'identifiant de l'app change, la 0.3.1 ne remplace pas « Visuels web » 0.3.0 mais s'installe à côté.
+  Désinstaller « Visuels web » depuis Paramètres > Applications.
+
+### Corrigé
+- Construction des installeurs par GitHub Actions (workflow déplacé à la racine du dépôt).
+
 ## [0.3.0] — 2026-09-24
 
 ### Ajouté
