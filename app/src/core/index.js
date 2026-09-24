@@ -11,7 +11,7 @@ const { TYPES } = require('./render/renderers');
 const { setFontsDir } = require('./render/render');
 
 // Réglages des décors livrés avec l'app (uni, libellé, cadrage C), relevés sur les InDesign existants.
-const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(resources, 'decors.csv'));
+const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(resources, 'gamme_deco.csv'));
 
 /**
  * Prépare un lot : scan, contexte, manifeste et plan (rien n'est encore écrit).
@@ -21,7 +21,7 @@ const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(
  * @param {string[]} [o.sources] décors déposés (chemins complets)
  * @param {object} [o.saisies] réfs saisies, par chemin complet de dossier décor
  * @param {string} [o.inventaire] inventaire CSV à la place du scan
- * @param {string} [o.config] decors.csv à la place des réglages livrés
+ * @param {string} [o.config] gamme_deco.csv à la place des réglages livrés
  * @param {object[]} [o.reglages] réglages des décors (prioritaires sur config)
  * @param {object} [o.scan] résultat de scanGamme déjà calculé
  * Les autres options (types, decors, refs, force, rangement) sont celles de buildPlan.

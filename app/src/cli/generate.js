@@ -1,5 +1,5 @@
 // Génère les visuels web des références de la gamme (incrémental : seules les images à refaire sont rendues).
-// Usage : node cli/generate.js "<dossier GAMME>" [--out sortie] [--inventaire inventaire.csv] [--config decors.csv]
+// Usage : node cli/generate.js "<dossier GAMME>" [--out sortie] [--inventaire inventaire.csv] [--config gamme_deco.csv]
 //           [--types A-01,A-02,P,C,II-01,II-02,II-03] [--decors "LEAF,PALMERAIE"] [--refs "94953622,…"]
 //           [--force] [--jobs N] [--dry-run] [--par-decor] [--depot "<dossier décor>,…"]
 // Sans --inventaire, la gamme est scannée directement ; sans --config, les réglages livrés avec l'app sont utilisés.

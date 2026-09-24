@@ -10,7 +10,7 @@ const DEFAULT_RESOURCES = path.join(__dirname, '..', '..', 'resources');
  * @param {object} data
  * @param {string} data.root dossier GAMME
  * @param {object[]} data.rows lignes d'inventaire
- * @param {object[]} [data.decors] lignes de decors.csv
+ * @param {object[]} [data.decors] lignes de gamme_deco.csv
  * @param {string} [data.resources] dossier des gabarits, statiques et polices
  * @param {string} data.cacheDir dossier inscriptible (unis extraits des PSD)
  */
