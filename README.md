@@ -50,7 +50,7 @@ Les installeurs ne sont pas signés (pas de certificat éditeur) : une alerte s'
 Si « Windows a protégé votre ordinateur » s'affiche : cliquer sur « Informations complémentaires » puis « Exécuter quand même ». L'app s'installe sans droits administrateur.
 
 **macOS** — ouvrir le `.dmg` (`arm64` pour Mac M1/M2/M3, `x64` pour Mac Intel) et glisser l'app dans Applications.  
-Au premier lancement : clic droit > Ouvrir > Ouvrir.  
+Au premier lancement : Réglages Système > Confidentialité et sécurité > « Ouvrir quand même » (avant macOS 15 : clic droit > Ouvrir).  
 Si macOS indique que l'app « est endommagée » : `xattr -cr "/Applications/LM VisuBatch.app"` dans le Terminal.
 
 ---

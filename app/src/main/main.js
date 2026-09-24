@@ -3,7 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog, shell } = require('electron');
 const sharp = require('sharp');
 const core = require('../core');
 const { log } = core;
@@ -201,10 +201,13 @@ function createWindow() {
     minWidth: 1040,
     minHeight: 680,
     title: 'LM VisuBatch',
+    icon: path.join(RESOURCES, 'icon.png'),
     backgroundColor: '#e9ecea',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
-  win.removeMenu();
+  // macOS garde toujours une barre de menus : menu minimal (à propos, copier-coller, quitter) au lieu de celui d'Electron.
+  if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]));
+  else win.removeMenu();
   win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   ipcMain.handle('analyse', () => {

@@ -33,9 +33,11 @@ function parse(file) {
 
 const formatKey = (format, cote) => `${format}|${cote || ''}`;
 
+// Noms en NFC, comme ceux des fichiers : macOS peut rendre les accents décomposés (« CRÈME »),
+// et le nom du dossier sert de clé (gamme_deco.csv, réglages). Les chemins restent valides : macOS ignore la forme.
 const decorDirs = root => fs.readdirSync(root, { withFileTypes: true })
   .filter(d => d.isDirectory() && !d.name.startsWith('.') && d.name.trim())
-  .map(d => d.name);
+  .map(d => d.name.normalize('NFC'));
 
 /**
  * Scanne un dossier décor (seule sa racine est lue : OLD, SUR MESURE, LM WEB… sont ignorés).
@@ -107,7 +109,7 @@ function scanGamme(root, { sources = [], saisies = {} } = {}) {
   if (root) for (const dir of decorDirs(root)) entries.set(dir, { base: root, dir, depot: false });
   for (const src of sources) {
     if (!fs.existsSync(src)) continue;
-    const dir = path.basename(src);
+    const dir = path.basename(src).normalize('NFC');
     entries.set(dir, { base: path.dirname(src), dir, depot: true });
   }
   const decors = [];
