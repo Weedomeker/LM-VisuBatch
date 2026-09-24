@@ -35,11 +35,9 @@ const uniLabel = (ctx, code) => {
   return `ULM ${code}\n${name}`;
 };
 
-// Source du motif d'un uni en 100 x hauteur : image embarquée, image « au 10ème » de la gamme,
-// ou à défaut contenu du PSD web (`psd`), extrait une fois dans le cache.
+// Source du motif d'un uni en 100 x hauteur, toujours lue dans la gamme (rien n'est embarqué dans l'app) :
+// image « au 10ème » du dossier de l'uni, ou à défaut contenu du PSD web (`psd`), extrait une fois dans le cache.
 function uniSource(ctx, code, hauteur) {
-  const bundled = path.join(ctx.resources, 'motifs', 'unis', `ULM${code}-100x${hauteur}.jpg`);
-  if (fs.existsSync(bundled)) return { file: bundled };
   const dossier = uniDossier(ctx, code);
   if (!dossier) throw new Error(`Dossier de l'uni ${code} introuvable`);
   const inv = ctx.rows.find(r => r.dossier === dossier && r.largeur === '100' && r.hauteur === hauteur);

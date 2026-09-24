@@ -11,7 +11,7 @@ const DEFAULT_RESOURCES = path.join(__dirname, '..', '..', 'resources');
  * @param {string} data.root dossier GAMME
  * @param {object[]} data.rows lignes d'inventaire
  * @param {object[]} [data.decors] lignes de decors.csv
- * @param {string} [data.resources] dossier des gabarits, statiques, polices et unis embarqués
+ * @param {string} [data.resources] dossier des gabarits, statiques et polices
  * @param {string} data.cacheDir dossier inscriptible (unis extraits des PSD)
  */
 function createContext({ root, rows, decors = [], resources = DEFAULT_RESOURCES, cacheDir }) {
