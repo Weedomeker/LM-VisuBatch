@@ -3,7 +3,7 @@ const fs = require('fs');
 
 function readCsv(file) {
   if (!file || !fs.existsSync(file)) return [];
-  const [header, ...lines] = fs.readFileSync(file, 'utf8').replace(/^﻿/, '').split(/\r?\n/);
+  const [header, ...lines] = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/);
   const cols = header.split(';');
   return lines.filter(Boolean).map(l => Object.fromEntries(l.split(';').map((v, i) => [cols[i], v])));
 }

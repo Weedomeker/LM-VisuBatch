@@ -66,6 +66,8 @@ npm run dev            # lancer l'app avec rechargement automatique à chaque mo
 npm run generate -- <GAMME> --config <csv> --out <sortie>   # génération en ligne de commande
 npm run inventaire -- <GAMME>                               # inventaire des fichiers
 npm test               # non-régression sur test/exemple (sortie dans test/resultat)
+npm run lint           # vérification ESLint
+npm run format         # mise en forme Prettier
 npm run dist:win       # compiler l'installeur Windows (dans app/dist/)
 ```
 

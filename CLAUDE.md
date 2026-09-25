@@ -22,6 +22,8 @@ Application Electron (Windows + macOS) qui génère par lot les visuels web des 
 npm install        # dépendances de app/
 npm run dev        # app avec rechargement automatique
 npm test           # non-régression sur test/exemple → doit afficher « 0 différentes »
+npm run lint       # ESLint 8 (.eslintrc.json)
+npm run format     # Prettier (.prettierrc.json) ; format:check pour vérifier sans écrire
 npm run generate -- <GAMME> --config <csv> --out <sortie>
 ```
 
@@ -33,6 +35,7 @@ npm run generate -- <GAMME> --config <csv> --out <sortie>
 - **Rendus** : toute modification du moteur doit garder la non-régression à 0 image différente,
   sauf changement voulu (alors le signaler dans le CHANGELOG : « recalculées une fois »).
 - **Accents** : les noms de dossiers/fichiers peuvent arriver en NFD sur macOS — comparer en NFC.
+- **Avant de commiter** : `npm run lint` et `npm run format:check` doivent passer.
 - **Multiplateforme** : penser Windows et macOS (chemins, accents, sharp construit par plateforme).
 
 ## Git et versioning
