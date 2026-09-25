@@ -1,0 +1,15 @@
+{
+  "name": "lm-visubatch-racine",
+  "private": true,
+  "description": "Raccourcis pour lancer les scripts de app/ depuis la racine du dépôt",
+  "scripts": {
+    "postinstall": "npm --prefix app install",
+    "start": "npm --prefix app start",
+    "dev": "npm --prefix app run dev",
+    "generate": "node app/src/cli/generate.js",
+    "inventaire": "node app/src/cli/inventaire.js",
+    "test": "node app/src/cli/generate.js test/exemple/GAMME --config test/exemple/gamme_deco.csv --out test/resultat && node app/test/compare-dossiers.js test/resultat test/exemple/sortie",
+    "dist:win": "npm --prefix app run dist:win",
+    "dist:mac": "npm --prefix app run dist:mac"
+  }
+}

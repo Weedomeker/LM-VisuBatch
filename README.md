@@ -57,19 +57,18 @@ Si macOS indique que l'app « est endommagée » : `xattr -cr "/Applications/LM 
 
 ## Développement
 
+Toutes les commandes se lancent depuis la racine du dépôt (le `package.json` racine relaie vers `app/`) :
+
 ```bash
-cd app
-npm install
+npm install            # installe les dépendances de app/
 npm start              # lancer l'app
 npm run dev            # lancer l'app avec rechargement automatique à chaque modification
+npm run generate -- <GAMME> --config <csv> --out <sortie>   # génération en ligne de commande
+npm run inventaire -- <GAMME>                               # inventaire des fichiers
+npm test               # non-régression sur test/exemple (sortie dans test/resultat)
 npm run dist:win       # compiler l'installeur Windows (dans app/dist/)
 ```
 
 L'installeur macOS se compile sur un Mac (`npm run dist:mac`) ou via GitHub Actions (onglet Actions > Installeurs > Run workflow).
 
-**Test de non-régression :**
-```bash
-node app/src/cli/generate.js "test/exemple/GAMME" --config test/exemple/gamme_deco.csv --out <sortie>
-node app/test/compare-dossiers.js <sortie> test/exemple/sortie
-# doit afficher 0 image différente
-```
+**Test de non-régression :** `npm test` doit afficher « 0 différentes ».

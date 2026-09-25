@@ -11,6 +11,7 @@ exemple/
 
 # Fichiers générés localement
 inventaire.csv
+test/resultat/
 
 # Session de brainstorming
 app/.superpowers/
