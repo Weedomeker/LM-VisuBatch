@@ -17,10 +17,16 @@ const DEFAULT_RESOURCES = path.join(__dirname, '..', '..', 'resources');
 function createContext({ root, rows, deco = [], resources = DEFAULT_RESOURCES, cacheDir }) {
   let dirs;
   return {
-    root, rows, deco, resources, cacheDir,
+    root,
+    rows,
+    deco,
+    resources,
+    cacheDir,
     decorConfig: new Map(deco.map(r => [r.dossier, r])),
     // Dossiers de la gamme, lus une seule fois (recherche des unis « 620 VERT… »).
-    get dirs() { return dirs ??= fs.readdirSync(root).map(n => n.normalize('NFC')); },
+    get dirs() {
+      return (dirs ??= fs.readdirSync(root).map(n => n.normalize('NFC')));
+    },
     gabarit: name => path.join(resources, 'gabarits', name),
     toData: () => ({ root, rows, deco, resources, cacheDir }),
   };

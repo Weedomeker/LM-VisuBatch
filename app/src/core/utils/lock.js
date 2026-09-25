@@ -39,7 +39,9 @@ function acquireLock(outDir, user = os.userInfo().username) {
     if (e.code !== 'EEXIST') throw e;
     const other = currentLock(outDir);
     if (other) {
-      const err = new Error(`Un lot est déjà en cours dans ce dossier : ${other.user} (${other.host}) depuis ${new Date(other.since).toLocaleTimeString('fr-FR')}`);
+      const err = new Error(
+        `Un lot est déjà en cours dans ce dossier : ${other.user} (${other.host}) depuis ${new Date(other.since).toLocaleTimeString('fr-FR')}`,
+      );
       err.code = 'LOCKED';
       err.lock = other;
       throw err;
@@ -48,7 +50,12 @@ function acquireLock(outDir, user = os.userInfo().username) {
     create();
   }
   const timer = setInterval(() => {
-    try { const now = new Date(); fs.utimesSync(file, now, now); } catch { /* dossier réseau momentanément indisponible */ }
+    try {
+      const now = new Date();
+      fs.utimesSync(file, now, now);
+    } catch {
+      /* dossier réseau momentanément indisponible */
+    }
   }, REFRESH_MS);
   timer.unref();
   return {
@@ -57,13 +64,20 @@ function acquireLock(outDir, user = os.userInfo().username) {
       try {
         const cur = JSON.parse(fs.readFileSync(file, 'utf8'));
         if (cur.host === info.host && cur.pid === info.pid) fs.rmSync(file, { force: true });
-      } catch { /* déjà libéré */ }
+      } catch {
+        /* déjà libéré */
+      }
     },
   };
 }
 
 function isAlive(pid) {
-  try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === 'EPERM';
+  }
 }
 
 module.exports = { acquireLock, currentLock };

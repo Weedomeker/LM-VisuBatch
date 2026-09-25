@@ -1,115 +1,147 @@
 <!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'">
-  <title>LM VisuBatch</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="barre">
-    <strong class="marque">LM VisuBatch</strong>
-    <div class="dossier">
-      <span class="dossier-nom">GAMME</span>
-      <span class="dossier-chemin" id="chemin-gamme">non choisi</span>
-      <button class="lien" data-choisir="gamme">Changer</button>
-    </div>
-    <div class="dossier">
-      <span class="dossier-nom">Sortie</span>
-      <span class="dossier-chemin" id="chemin-sortie">non choisi</span>
-      <button class="lien" data-choisir="sortie">Changer</button>
-    </div>
-    <button class="btn-aide" id="btn-aide" aria-label="Aide — fichiers requis">?</button>
-    <div class="options-wrap">
-      <button class="secondaire" id="btn-options">⚙ Options</button>
-      <div class="popover-options" id="popover-options" hidden>
-        <span class="popover-label">Types de visuels</span>
-        <div id="types"></div>
-        <span class="popover-label" style="margin-top:14px">Rangement des images</span>
-        <div class="bascule" role="radiogroup" aria-label="Rangement des images">
-          <button role="radio" data-rangement="plat">Tout à plat</button>
-          <button role="radio" data-rangement="decor">Un dossier par déco</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'"
+    />
+    <title>LM VisuBatch</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="barre">
+      <strong class="marque">LM VisuBatch</strong>
+      <div class="dossier">
+        <span class="dossier-nom">GAMME</span>
+        <span class="dossier-chemin" id="chemin-gamme">non choisi</span>
+        <button class="lien" data-choisir="gamme">Changer</button>
+      </div>
+      <div class="dossier">
+        <span class="dossier-nom">Sortie</span>
+        <span class="dossier-chemin" id="chemin-sortie">non choisi</span>
+        <button class="lien" data-choisir="sortie">Changer</button>
+      </div>
+      <button class="btn-aide" id="btn-aide" aria-label="Aide — fichiers requis">?</button>
+      <div class="options-wrap">
+        <button class="secondaire" id="btn-options">⚙ Options</button>
+        <div class="popover-options" id="popover-options" hidden>
+          <span class="popover-label">Types de visuels</span>
+          <div id="types"></div>
+          <span class="popover-label" style="margin-top: 14px">Rangement des images</span>
+          <div class="bascule" role="radiogroup" aria-label="Rangement des images">
+            <button role="radio" data-rangement="plat">Tout à plat</button>
+            <button role="radio" data-rangement="decor">Un dossier par déco</button>
+          </div>
+          <span class="popover-label" style="margin-top: 14px">Journaux</span>
+          <button class="lien" id="ouvrir-logs">Ouvrir les logs</button>
         </div>
-        <span class="popover-label" style="margin-top:14px">Journaux</span>
-        <button class="lien" id="ouvrir-logs">Ouvrir les logs</button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main id="principal">
-    <div class="barre-outils">
-      <input type="search" id="recherche" placeholder="Chercher une déco" aria-label="Chercher une déco">
-      <div class="filtres" role="radiogroup" aria-label="Filtrer les décos">
-        <button role="radio" data-filtre="tous">Tous</button>
-        <button role="radio" data-filtre="afaire">À faire</button>
-        <button role="radio" data-filtre="incomplets">Incomplets</button>
+    <main id="principal">
+      <div class="barre-outils">
+        <input type="search" id="recherche" placeholder="Chercher une déco" aria-label="Chercher une déco" />
+        <div class="filtres" role="radiogroup" aria-label="Filtrer les décos">
+          <button role="radio" data-filtre="tous">Tous</button>
+          <button role="radio" data-filtre="afaire">À faire</button>
+          <button role="radio" data-filtre="incomplets">Incomplets</button>
+        </div>
+        <button class="lien" id="cocher-afaire">Cocher les À faire</button>
+        <button class="lien" id="tout-decocher">Tout décocher</button>
+        <button class="lien" id="ajouter-source">+ Ajouter un dossier</button>
       </div>
-      <button class="lien" id="cocher-afaire">Cocher les À faire</button>
-      <button class="lien" id="tout-decocher">Tout décocher</button>
-      <button class="lien" id="ajouter-source">+ Ajouter un dossier</button>
-    </div>
-    <div class="depot" id="depot" hidden>
-      <p><strong>Déposez un dossier déco</strong> ou un CSV de références</p>
-    </div>
-    <ul id="deco" class="deco" aria-label="Décos"></ul>
-  </main>
+      <div class="depot" id="depot" hidden>
+        <p><strong>Déposez un dossier déco</strong> ou un CSV de références</p>
+      </div>
+      <ul id="deco" class="deco" aria-label="Décos"></ul>
+    </main>
 
-  <footer class="lot" id="lot">
-    <label class="refaire"><input type="checkbox" id="tout-refaire"> Tout refaire</label>
-    <div class="resume" id="resume"></div>
-    <div class="actions" id="actions">
-      <button class="principal" id="generer">Générer</button>
-    </div>
-  </footer>
+    <footer class="lot" id="lot">
+      <label class="refaire"><input type="checkbox" id="tout-refaire" /> Tout refaire</label>
+      <div class="resume" id="resume"></div>
+      <div class="actions" id="actions">
+        <button class="principal" id="generer">Générer</button>
+      </div>
+    </footer>
 
-  <!-- Tiroir fiche -->
-  <div class="tiroir-fond" id="tiroir-fond" hidden></div>
-  <aside class="tiroir" id="tiroir" hidden>
-    <div class="tiroir-entete">
-      <strong class="tiroir-titre" id="tiroir-titre"></strong>
-      <button class="tiroir-fermer" id="tiroir-fermer" aria-label="Fermer la fiche">✕</button>
-    </div>
-    <div class="tiroir-corps" id="tiroir-corps"></div>
-  </aside>
+    <!-- Tiroir fiche -->
+    <div class="tiroir-fond" id="tiroir-fond" hidden></div>
+    <aside class="tiroir" id="tiroir" hidden>
+      <div class="tiroir-entete">
+        <strong class="tiroir-titre" id="tiroir-titre"></strong>
+        <button class="tiroir-fermer" id="tiroir-fermer" aria-label="Fermer la fiche">✕</button>
+      </div>
+      <div class="tiroir-corps" id="tiroir-corps"></div>
+    </aside>
 
-  <div class="messages" id="messages" role="status"></div>
+    <div class="messages" id="messages" role="status"></div>
 
-  <!-- Modale d'aide -->
-  <div class="aide-fond" id="aide-fond" hidden></div>
-  <dialog class="aide-modale" id="aide-modale">
-    <div class="aide-entete">
-      <strong class="aide-titre">Fichiers requis</strong>
-      <button class="tiroir-fermer" id="aide-fermer" aria-label="Fermer l'aide">✕</button>
-    </div>
-    <div class="aide-corps">
-      <section>
-        <h2>Visuel source</h2>
-        <p>Seuls les JPEG contenant <strong>« au 10ème »</strong> dans le nom sont reconnus comme visuels sources :</p>
-        <pre class="aide-code">&lt;Déco&gt; &lt;largeur&gt;x&lt;hauteur&gt; au 10ème [GAUCHE|DROIT].jpg</pre>
-        <p>Formats : <strong>100×210, 100×255, 125×210, 125×255, 150×210, 150×255</strong></p>
-      </section>
-      <section>
-        <h2>Référence produit</h2>
-        <p>La référence (<code>9xxxxxxx</code>) et la finition (<code>MAT</code> / <code>BRILLANT</code>) sont lues dans le nom de <em>n'importe quel fichier</em> du dossier (PDF, JPEG…) qui contient la bonne dimension.</p>
-      </section>
-      <section>
-        <h2>Visuels sources requis par visuel</h2>
-        <table class="aide-table">
-          <thead><tr><th>Visuel</th><th>Visuel source nécessaire</th></tr></thead>
-          <tbody>
-            <tr><td><strong>A-01</strong> Douche</td><td>Format exact de la référence</td></tr>
-            <tr><td><strong>A-02</strong> Deux panneaux</td><td>100×hauteur (+ GAUCHE/DROIT si diptyque)</td></tr>
-            <tr><td><strong>P</strong> Panneau seul</td><td>Format exact de la référence</td></tr>
-            <tr><td><strong>C</strong> Composition</td><td>150×255 (+ GAUCHE/DROIT si diptyque)</td></tr>
-            <tr><td><strong>II-01</strong> Formats</td><td>Les 6 formats — × GAUCHE et DROIT si diptyque</td></tr>
-            <tr><td><strong>II-02</strong> Profilés</td><td class="aide-statique">Statique — aucun visuel source requis</td></tr>
-            <tr><td><strong>II-03</strong> Kit de pose</td><td class="aide-statique">Statique — aucun visuel source requis</td></tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </dialog>
+    <!-- Modale d'aide -->
+    <div class="aide-fond" id="aide-fond" hidden></div>
+    <dialog class="aide-modale" id="aide-modale">
+      <div class="aide-entete">
+        <strong class="aide-titre">Fichiers requis</strong>
+        <button class="tiroir-fermer" id="aide-fermer" aria-label="Fermer l'aide">✕</button>
+      </div>
+      <div class="aide-corps">
+        <section>
+          <h2>Visuel source</h2>
+          <p>Seuls les JPEG contenant <strong>« au 10ème »</strong> dans le nom sont reconnus comme visuels sources :</p>
+          <pre class="aide-code">&lt;Déco&gt; &lt;largeur&gt;x&lt;hauteur&gt; au 10ème [GAUCHE|DROIT].jpg</pre>
+          <p>Formats : <strong>100×210, 100×255, 125×210, 125×255, 150×210, 150×255</strong></p>
+        </section>
+        <section>
+          <h2>Référence produit</h2>
+          <p>
+            La référence (<code>9xxxxxxx</code>) et la finition (<code>MAT</code> / <code>BRILLANT</code>) sont lues dans le nom de
+            <em>n'importe quel fichier</em> du dossier (PDF, JPEG…) qui contient la bonne dimension.
+          </p>
+        </section>
+        <section>
+          <h2>Visuels sources requis par visuel</h2>
+          <table class="aide-table">
+            <thead>
+              <tr>
+                <th>Visuel</th>
+                <th>Visuel source nécessaire</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A-01</strong> Douche</td>
+                <td>Format exact de la référence</td>
+              </tr>
+              <tr>
+                <td><strong>A-02</strong> Deux panneaux</td>
+                <td>100×hauteur (+ GAUCHE/DROIT si diptyque)</td>
+              </tr>
+              <tr>
+                <td><strong>P</strong> Panneau seul</td>
+                <td>Format exact de la référence</td>
+              </tr>
+              <tr>
+                <td><strong>C</strong> Composition</td>
+                <td>150×255 (+ GAUCHE/DROIT si diptyque)</td>
+              </tr>
+              <tr>
+                <td><strong>II-01</strong> Formats</td>
+                <td>Les 6 formats — × GAUCHE et DROIT si diptyque</td>
+              </tr>
+              <tr>
+                <td><strong>II-02</strong> Profilés</td>
+                <td class="aide-statique">Statique — aucun visuel source requis</td>
+              </tr>
+              <tr>
+                <td><strong>II-03</strong> Kit de pose</td>
+                <td class="aide-statique">Statique — aucun visuel source requis</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </dialog>
 
-  <script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>

@@ -36,29 +36,55 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
       log.error(`${task.row.dossier} ${task.row.ref} ${task.type} (${path.basename(task.outputs[0])}) : ${stack || error}`);
     } else for (const f of task.outputs) manifest.set(f, task.hash);
     onEvent({ type: error ? 'error' : 'done', task: describe(task), done, total, error });
-    if (Date.now() - lastSave > 2000) { manifest.save(); lastSave = Date.now(); }
+    if (Date.now() - lastSave > 2000) {
+      manifest.save();
+      lastSave = Date.now();
+    }
   };
 
   for (const task of plan.copies) {
     if (signal?.aborted) break;
-    try { copyTask({ ...task, tag }); finish(task); } catch (e) { finish(task, e.message, e.stack); }
+    try {
+      copyTask({ ...task, tag });
+      finish(task);
+    } catch (e) {
+      finish(task, e.message, e.stack);
+    }
   }
 
   const queue = [...plan.renders];
   const workers = new Set();
   const interrupted = []; // tâches en cours au moment de l'annulation
-  const abort = () => { for (const w of workers) w.terminate(); };
+  const abort = () => {
+    for (const w of workers) w.terminate();
+  };
   signal?.addEventListener('abort', abort, { once: true });
 
   // Envoie une tâche au worker ; se résout ({ error?, stack? }) aussi si le worker meurt (plantage, annulation).
-  const send = (w, task) => new Promise(resolve => {
-    const onMessage = m => { cleanup(); resolve(m); };
-    const onExit = code => { cleanup(); resolve({ error: signal?.aborted ? 'annulé' : `Le rendu s'est arrêté (code ${code})` }); };
-    const onError = e => { cleanup(); resolve({ error: e.message, stack: e.stack }); };
-    const cleanup = () => { w.off('message', onMessage); w.off('exit', onExit); w.off('error', onError); };
-    w.on('message', onMessage); w.on('exit', onExit); w.on('error', onError);
-    w.postMessage({ ...task, tag });
-  });
+  const send = (w, task) =>
+    new Promise(resolve => {
+      const onMessage = m => {
+        cleanup();
+        resolve(m);
+      };
+      const onExit = code => {
+        cleanup();
+        resolve({ error: signal?.aborted ? 'annulé' : `Le rendu s'est arrêté (code ${code})` });
+      };
+      const onError = e => {
+        cleanup();
+        resolve({ error: e.message, stack: e.stack });
+      };
+      const cleanup = () => {
+        w.off('message', onMessage);
+        w.off('exit', onExit);
+        w.off('error', onError);
+      };
+      w.on('message', onMessage);
+      w.on('exit', onExit);
+      w.on('error', onError);
+      w.postMessage({ ...task, tag });
+    });
 
   const spawn = () => {
     const w = new Worker(path.join(__dirname, 'worker.js'), { workerData: ctx.toData() });
@@ -74,7 +100,10 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
         const task = queue.shift();
         onEvent({ type: 'start', task: describe(task), done, total });
         const { error, stack } = await send(w, task);
-        if (signal?.aborted) { interrupted.push(task); break; }
+        if (signal?.aborted) {
+          interrupted.push(task);
+          break;
+        }
         finish(task, error, stack);
         if (!workers.has(w)) w = spawn(); // worker mort (mémoire…) : on repart sur un neuf
       }
@@ -89,7 +118,11 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
     signal?.removeEventListener('abort', abort);
     // Les workers sont arrêtés : leurs fichiers temporaires ne sont plus verrouillés (Windows).
     for (const t of interrupted) {
-      try { fs.rmSync(tmpName(t.outputs[0], tag), { force: true }); } catch { /* sera écrasé au prochain lot */ }
+      try {
+        fs.rmSync(tmpName(t.outputs[0], tag), { force: true });
+      } catch {
+        /* sera écrasé au prochain lot */
+      }
     }
     manifest.save();
   }

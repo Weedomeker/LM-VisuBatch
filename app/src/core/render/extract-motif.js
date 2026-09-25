@@ -7,7 +7,9 @@ const sharp = require('sharp');
 const agPsd = require('ag-psd');
 
 agPsd.initializeCanvas(
-  () => { throw new Error('canvas non disponible'); },
+  () => {
+    throw new Error('canvas non disponible');
+  },
   (width, height) => ({ width, height, data: new Uint8ClampedArray(width * height * 4) }),
 );
 
@@ -33,20 +35,28 @@ async function extractMotif(psdPath, outFile, position = 'unique') {
   }
   if (merged && !uniform) {
     await sharp(Buffer.from(merged.data.buffer), { raw: { width, height, channels: 4 } })
-      .flatten({ background: '#ffffff' }).jpeg({ quality: 95 }).toFile(outFile);
+      .flatten({ background: '#ffffff' })
+      .jpeg({ quality: 95 })
+      .toFile(outFile);
     return { name: panel.name, source: linked.name, width, height };
   }
   // … sinon (enregistré sans « compatibilité maximale ») on superpose ses calques visibles,
   // rognés aux limites du document.
   const composites = [];
   for (const l of (inner.children || []).filter(l => !l.hidden && l.imageData && l.imageData.width)) {
-    const left = l.left || 0, top = l.top || 0;
-    const x0 = Math.max(0, left), y0 = Math.max(0, top);
-    const x1 = Math.min(width, left + l.imageData.width), y1 = Math.min(height, top + l.imageData.height);
+    const left = l.left || 0,
+      top = l.top || 0;
+    const x0 = Math.max(0, left),
+      y0 = Math.max(0, top);
+    const x1 = Math.min(width, left + l.imageData.width),
+      y1 = Math.min(height, top + l.imageData.height);
     if (x1 <= x0 || y1 <= y0) continue;
-    const input = await sharp(Buffer.from(l.imageData.data.buffer), { raw: { width: l.imageData.width, height: l.imageData.height, channels: 4 } })
+    const input = await sharp(Buffer.from(l.imageData.data.buffer), {
+      raw: { width: l.imageData.width, height: l.imageData.height, channels: 4 },
+    })
       .extract({ left: x0 - left, top: y0 - top, width: x1 - x0, height: y1 - y0 })
-      .png().toBuffer();
+      .png()
+      .toBuffer();
     composites.push({ input, left: x0, top: y0 });
   }
   await sharp({ create: { width, height, channels: 4, background: '#ffffff' } })

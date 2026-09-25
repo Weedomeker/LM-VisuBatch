@@ -27,7 +27,19 @@ const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(
  * @param {object} [o.scan] résultat de scanGamme déjà calculé
  * Les autres options (types, deco, refs, force, rangement) sont celles de buildPlan.
  */
-function prepareBatch({ root, outDir, sources, saisies, inventaire, config, reglages, resources = DEFAULT_RESOURCES, cacheDir, scan, ...selection }) {
+function prepareBatch({
+  root,
+  outDir,
+  sources,
+  saisies,
+  inventaire,
+  config,
+  reglages,
+  resources = DEFAULT_RESOURCES,
+  cacheDir,
+  scan,
+  ...selection
+}) {
   if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies });
   const ctx = createContext({
     root,
@@ -56,7 +68,8 @@ async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
   const lock = acquireLock(manifest.outDir, options.user);
   const t0 = Date.now();
   const { counts } = plan;
-  const debut = `décos : ${selection.deco?.join(', ') || 'toutes'}  types : ${(selection.types || TYPES).join(',')}` +
+  const debut =
+    `décos : ${selection.deco?.join(', ') || 'toutes'}  types : ${(selection.types || TYPES).join(',')}` +
     `  tout refaire : ${selection.force ? 'oui' : 'non'}`;
   const bilan = `${counts.images} images à produire (${counts.renders} rendus), ${counts.upToDate} à jour, ${counts.blocked} impossibles`;
   log.info(`Lot lancé dans ${manifest.outDir} — ${debut} — ${bilan}`);
@@ -65,7 +78,8 @@ async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
   try {
     removeStaleTmp(manifest.outDir);
     const result = await runPlan(ctx, plan, { manifest, ...options });
-    fin = `FIN  ${result.done - result.errors.length}/${result.total} tâches, ${result.errors.length} erreur${result.errors.length > 1 ? 's' : ''}` +
+    fin =
+      `FIN  ${result.done - result.errors.length}/${result.total} tâches, ${result.errors.length} erreur${result.errors.length > 1 ? 's' : ''}` +
       `, ${((Date.now() - t0) / 1000).toFixed(1)} s${result.cancelled ? ' (annulé)' : ''}`;
     return result;
   } catch (e) {
@@ -79,6 +93,17 @@ async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
 }
 
 module.exports = {
-  prepareBatch, runBatch, runPlan, defaultJobs, defaultReglages, currentLock, log, configureLog,
-  scanGamme, readInventaire, writeInventaire, TYPES, FORMATS,
+  prepareBatch,
+  runBatch,
+  runPlan,
+  defaultJobs,
+  defaultReglages,
+  currentLock,
+  log,
+  configureLog,
+  scanGamme,
+  readInventaire,
+  writeInventaire,
+  TYPES,
+  FORMATS,
 };

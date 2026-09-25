@@ -30,7 +30,10 @@ function buildPlan(ctx, { outDir, manifest, types = TYPES, deco, refs, force = f
   for (const r of ctx.rows) {
     if (refs && !refs.includes(r.ref)) continue;
     if (onlyDeco && !onlyDeco.includes(r.dossier.toUpperCase()) && !onlyDeco.includes(r.decor.toUpperCase())) continue;
-    if (!r.ref) { sansRef.push(r.motif); continue; }
+    if (!r.ref) {
+      sansRef.push(r.motif);
+      continue;
+    }
     for (const type of types) {
       const def = RENDERERS[type];
       if (!def) throw new Error(`Type de visuel inconnu : ${type}`);
@@ -46,9 +49,20 @@ function buildPlan(ctx, { outDir, manifest, types = TYPES, deco, refs, force = f
         byKey.set(key, task);
       }
       const file = path.join(outDir, rangement === 'decor' ? r.dossier : '', outputName(r, type));
-      const stats = byDossier[r.dossier] ??= { images: 0, upToDate: 0, blocked: 0 };
-      if (task.error) { blocked.push({ ref: r.ref, type, dossier: r.dossier, file, message: task.error }); stats.blocked++; continue; }
-      if (!force && manifest.isFresh(file, task.hash)) { task.fresh.push(file); upToDate++; stats.upToDate++; } else { task.outputs.push(file); stats.images++; }
+      const stats = (byDossier[r.dossier] ??= { images: 0, upToDate: 0, blocked: 0 });
+      if (task.error) {
+        blocked.push({ ref: r.ref, type, dossier: r.dossier, file, message: task.error });
+        stats.blocked++;
+        continue;
+      }
+      if (!force && manifest.isFresh(file, task.hash)) {
+        task.fresh.push(file);
+        upToDate++;
+        stats.upToDate++;
+      } else {
+        task.outputs.push(file);
+        stats.images++;
+      }
     }
   }
 

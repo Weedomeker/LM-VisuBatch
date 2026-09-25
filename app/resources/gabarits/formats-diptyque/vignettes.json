@@ -1,10 +1,7 @@
 {
   "source": "PALMERAIE 94953523-II-01",
   "page": "page.jpg",
-  "cotes": [
-    "GAUCHE",
-    "DROIT"
-  ],
+  "cotes": ["GAUCHE", "DROIT"],
   "vignettes": [
     {
       "format": "100x210",

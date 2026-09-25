@@ -13,8 +13,8 @@ const TYPES = ['A-01', 'A-02', 'P', 'C', 'II-01', 'II-02', 'II-03'];
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 // « LEAF Mat 100x210 », « PALMERAIE Brillant 100x210 DROIT »
-const productName = r => [r.decor.toUpperCase(), r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`, r.cote]
-  .filter(Boolean).join(' ');
+const productName = r =>
+  [r.decor.toUpperCase(), r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`, r.cote].filter(Boolean).join(' ');
 const outputName = (r, type) => `${r.ref}-${type}-${productName(r)}.jpg`;
 
 // `base` : dossier d'où vient le décor (GAMME ou décor déposé) ; absent des inventaires CSV.
@@ -128,7 +128,12 @@ async function compositionMotif(ctx, r) {
     const m = await sharp(a).metadata();
     const bm = await sharp(b).resize(m.width, m.height, { fit: 'fill' }).toBuffer();
     source = await sharp({ create: { width: m.width * 2, height: m.height, channels: 3, background: '#ffffff' } })
-      .composite([{ input: a, left: 0, top: 0 }, { input: bm, left: m.width, top: 0 }]).png().toBuffer();
+      .composite([
+        { input: a, left: 0, top: 0 },
+        { input: bm, left: m.width, top: 0 },
+      ])
+      .png()
+      .toBuffer();
     widthCm = 300;
   } else {
     source = sources[0];
@@ -150,12 +155,17 @@ const finitionC = r => (r.finition === 'BRILLANT' ? 'brillant' : 'mat');
 function formatsPlan(ctx, r) {
   const templateDir = requireDir(ctx.gabarit(`formats-${r.cote ? 'diptyque' : 'simple'}`));
   const spec = JSON.parse(fs.readFileSync(path.join(templateDir, 'vignettes.json'), 'utf8'));
-  const motifs = new Map(spec.vignettes.map(v => [v.format, spec.cotes.map(cote => {
-    const [l, h] = v.format.split('x');
-    const m = findRow(ctx, r, l, h, cote);
-    if (!m) throw new Error(`Pas de motif ${v.format}${cote ? ' ' + cote : ''} pour ${r.dossier}`);
-    return motifPath(ctx, m);
-  })]));
+  const motifs = new Map(
+    spec.vignettes.map(v => [
+      v.format,
+      spec.cotes.map(cote => {
+        const [l, h] = v.format.split('x');
+        const m = findRow(ctx, r, l, h, cote);
+        if (!m) throw new Error(`Pas de motif ${v.format}${cote ? ' ' + cote : ''} pour ${r.dossier}`);
+        return motifPath(ctx, m);
+      }),
+    ]),
+  );
   return { templateDir, motifs };
 }
 
@@ -183,7 +193,9 @@ const RENDERERS = {
     key: r => `A-02|${r.dossier}|${r.hauteur}`,
     inputs: (ctx, r) => {
       const plan = planA02(ctx, r);
-      const files = Object.values(plan.motifs).map(m => (typeof m === 'string' ? m : (s => s.psd || s.file)(uniSource(ctx, m.uni, r.hauteur))));
+      const files = Object.values(plan.motifs).map(m =>
+        typeof m === 'string' ? m : (s => s.psd || s.file)(uniSource(ctx, m.uni, r.hauteur)),
+      );
       return { files: [...files, requireDir(ctx.gabarit(`inspiration-${r.hauteur}`))], salt: plan.labels };
     },
     render: async (ctx, r, file) => {
@@ -191,7 +203,10 @@ const RENDERERS = {
       const motifs = {};
       for (const [pos, m] of Object.entries(plan.motifs)) motifs[pos] = typeof m === 'string' ? m : await uniMotif(ctx, m.uni, r.hauteur);
       let img = await renderScene(ctx.gabarit(`inspiration-${r.hauteur}`), motifs);
-      img = await drawLabels(img, ['gauche', 'droit'].map(p => ({ ...LABEL_POS[p], name: plan.labels[p], dims: plan.dims })));
+      img = await drawLabels(
+        img,
+        ['gauche', 'droit'].map(p => ({ ...LABEL_POS[p], name: plan.labels[p], dims: plan.dims })),
+      );
       await saveJpeg(img, file);
     },
   },

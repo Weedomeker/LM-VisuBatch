@@ -14,7 +14,11 @@ function stamp(p, memo) {
   if (memo.has(p)) return memo.get(p);
   const st = fs.statSync(p);
   const value = st.isDirectory()
-    ? fs.readdirSync(p).sort().map(f => `${f}:${stamp(path.join(p, f), memo)}`).join('|')
+    ? fs
+        .readdirSync(p)
+        .sort()
+        .map(f => `${f}:${stamp(path.join(p, f), memo)}`)
+        .join('|')
     : `${st.size}-${Math.round(st.mtimeMs)}`;
   memo.set(p, value);
   return value;
@@ -50,11 +54,15 @@ class Manifest {
     this.entries = read(this.file);
     this.changes = {};
   }
-  rel(file) { return path.relative(this.outDir, file).split(path.sep).join('/'); }
+  rel(file) {
+    return path.relative(this.outDir, file).split(path.sep).join('/');
+  }
   isFresh(file, hash) {
     return this.entries[this.rel(file)] === hash && fs.existsSync(file);
   }
-  set(file, hash) { this.entries[this.rel(file)] = this.changes[this.rel(file)] = hash; }
+  set(file, hash) {
+    this.entries[this.rel(file)] = this.changes[this.rel(file)] = hash;
+  }
   save() {
     if (!Object.keys(this.changes).length) return;
     const tmp = `${this.file}.${os.hostname()}-${process.pid}.tmp`;
@@ -67,7 +75,11 @@ class Manifest {
 }
 
 function read(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')).images || {}; } catch { return {}; } // absent ou illisible : tout est à faire
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8')).images || {};
+  } catch {
+    return {};
+  } // absent ou illisible : tout est à faire
 }
 
 module.exports = { Manifest, fingerprint, ENGINE_VERSION };

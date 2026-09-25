@@ -17,15 +17,15 @@ La gamme source n'est jamais modifiée. Les images générées vont dans un doss
 
 ## Les 7 types de visuels
 
-| Code | Description |
-|------|-------------|
-| A-01 | Panneau seul en situation dans une douche |
-| A-02 | 2 panneaux côte à côte (gauche / droite) |
-| P | Miniature du panneau seul |
-| C | Composition carrée (format brochure) |
-| II-01 | Grille des 6 formats disponibles |
-| II-02 | Visuel statique (copié tel quel) |
-| II-03 | Visuel statique (copié tel quel) |
+| Code  | Description                               |
+| ----- | ----------------------------------------- |
+| A-01  | Panneau seul en situation dans une douche |
+| A-02  | 2 panneaux côte à côte (gauche / droite)  |
+| P     | Miniature du panneau seul                 |
+| C     | Composition carrée (format brochure)      |
+| II-01 | Grille des 6 formats disponibles          |
+| II-02 | Visuel statique (copié tel quel)          |
+| II-03 | Visuel statique (copié tel quel)          |
 
 ---
 

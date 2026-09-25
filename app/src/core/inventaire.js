@@ -35,9 +35,11 @@ const formatKey = (format, cote) => `${format}|${cote || ''}`;
 
 // Noms en NFC, comme ceux des fichiers : macOS peut rendre les accents décomposés (« CRÈME »),
 // et le nom du dossier sert de clé (gamme_deco.csv, réglages). Les chemins restent valides : macOS ignore la forme.
-const decorDirs = root => fs.readdirSync(root, { withFileTypes: true })
-  .filter(d => d.isDirectory() && !d.name.startsWith('.') && d.name.trim())
-  .map(d => d.name.normalize('NFC'));
+const decorDirs = root =>
+  fs
+    .readdirSync(root, { withFileTypes: true })
+    .filter(d => d.isDirectory() && !d.name.startsWith('.') && d.name.trim())
+    .map(d => d.name.normalize('NFC'));
 
 /**
  * Scanne un dossier décor (seule sa racine est lue : OLD, SUR MESURE, LM WEB… sont ignorés).
@@ -77,11 +79,14 @@ function scanDecor(base, dir, saisies = {}) {
     // Un même motif peut exister en MAT et en BRILLANT : une ligne par référence.
     for (const r of refs) rows.push({ ...base_, ref: r.ref, finition: r.finition });
     if (new Set(refs.map(r => r.finition)).size < refs.length) {
-      problems.push(`${dir} : ${k.replace('|', ' ')} réfs ambiguës (${refs.map(r => `${r.ref} ${r.finition || 'sans finition'}`).join(', ')})`);
+      problems.push(
+        `${dir} : ${k.replace('|', ' ')} réfs ambiguës (${refs.map(r => `${r.ref} ${r.finition || 'sans finition'}`).join(', ')})`,
+      );
     }
   }
   for (const [k, refs] of refsByKey) {
-    if (!motifs.has(k)) problems.push(`${dir} : ${k.replace('|', ' ').trim()} réf ${refs.map(r => r.ref).join(', ')} sans motif « au 10ème »`);
+    if (!motifs.has(k))
+      problems.push(`${dir} : ${k.replace('|', ' ').trim()} réf ${refs.map(r => r.ref).join(', ')} sans motif « au 10ème »`);
   }
 
   // Tableau des formats attendus (+ ceux, hors standard, trouvés dans le dossier).

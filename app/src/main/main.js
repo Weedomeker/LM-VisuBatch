@@ -64,24 +64,32 @@ function analyse() {
     if (!list.includes(`${b.type} : ${b.message}`)) list.push(`${b.type} : ${b.message}`);
     blockedBy.set(b.dossier, list);
   }
-  const deco = scan.deco.filter(d => d.depot || d.formats.some(f => f.motif || f.refs.length)).map(d => ({
-    dossier: d.dossier,
-    decor: d.decor,
-    chemin: path.join(d.base, d.dossier),
-    depot: d.depot,
-    formats: d.formats.map(f => ({ ...f, chemin: f.motif ? path.join(d.base, d.dossier, f.motif) : null })),
-    problems: d.problems,
-    refs: new Set(d.rows.filter(r => r.ref).map(r => r.ref)).size,
-    stats: plan?.byDossier[d.dossier] ?? { images: 0, upToDate: 0, blocked: 0 },
-    impossibles: blockedBy.get(d.dossier) ?? [],
-    reglage: reglages.find(r => r.dossier === d.dossier) ?? {},
-  })).sort((a, b) => a.dossier.localeCompare(b.dossier, 'fr'));
-  log.info(`Analyse de ${settings.gamme} : ${deco.length} décos, ${scan.problems.length} problèmes` +
-    (plan ? `, ${plan.counts.images} images à faire, ${plan.counts.blocked} impossibles` : ', pas de dossier de sortie') +
-    ` (${Date.now() - t0} ms)`);
+  const deco = scan.deco
+    .filter(d => d.depot || d.formats.some(f => f.motif || f.refs.length))
+    .map(d => ({
+      dossier: d.dossier,
+      decor: d.decor,
+      chemin: path.join(d.base, d.dossier),
+      depot: d.depot,
+      formats: d.formats.map(f => ({ ...f, chemin: f.motif ? path.join(d.base, d.dossier, f.motif) : null })),
+      problems: d.problems,
+      refs: new Set(d.rows.filter(r => r.ref).map(r => r.ref)).size,
+      stats: plan?.byDossier[d.dossier] ?? { images: 0, upToDate: 0, blocked: 0 },
+      impossibles: blockedBy.get(d.dossier) ?? [],
+      reglage: reglages.find(r => r.dossier === d.dossier) ?? {},
+    }))
+    .sort((a, b) => a.dossier.localeCompare(b.dossier, 'fr'));
+  log.info(
+    `Analyse de ${settings.gamme} : ${deco.length} décos, ${scan.problems.length} problèmes` +
+      (plan ? `, ${plan.counts.images} images à faire, ${plan.counts.blocked} impossibles` : ', pas de dossier de sortie') +
+      ` (${Date.now() - t0} ms)`,
+  );
   for (const p of scan.problems) log.debug(`Problème : ${p}`);
   for (const b of plan?.blocked ?? []) log.debug(`Impossible : ${b.dossier} ${b.ref} ${b.type} : ${b.message}`);
-  const unis = scan.deco.map(d => d.dossier.match(/^(\d{3})\s+(.*)$/)).filter(Boolean).map(m => ({ code: m[1], nom: m[2] }));
+  const unis = scan.deco
+    .map(d => d.dossier.match(/^(\d{3})\s+(.*)$/))
+    .filter(Boolean)
+    .map(m => ({ code: m[1], nom: m[2] }));
   return {
     settings,
     deco,
@@ -117,7 +125,10 @@ function importCsv(file) {
     const ref = (r.ref || '').trim();
     const d = scan?.deco.find(x => x.dossier === r.dossier || x.decor.toUpperCase() === (r.decor || '').toUpperCase());
     if (!/^9\d{7}$/.test(ref) || !r.largeur || !r.hauteur) continue;
-    if (!d) { unknown.add(r.dossier || r.decor); continue; }
+    if (!d) {
+      unknown.add(r.dossier || r.decor);
+      continue;
+    }
     const dir = path.join(d.base, d.dossier);
     const k = formatKey(`${r.largeur}x${r.hauteur}`, (r.cote || '').toUpperCase());
     const list = ((settings.saisies[dir] ??= {})[k] ??= []);
@@ -133,15 +144,25 @@ function drop(paths) {
   const messages = [];
   for (const p of paths) {
     let stat;
-    try { stat = fs.statSync(p); } catch { messages.push(`${path.basename(p)} : introuvable`); continue; }
+    try {
+      stat = fs.statSync(p);
+    } catch {
+      messages.push(`${path.basename(p)} : introuvable`);
+      continue;
+    }
     if (stat.isDirectory()) {
       const inGamme = settings.gamme && path.resolve(path.dirname(p)) === path.resolve(settings.gamme);
       if (inGamme) messages.push(`${path.basename(p)} est déjà dans la GAMME`);
-      else if (!settings.sources.includes(p)) { settings.sources.push(p); messages.push(`${path.basename(p)} ajouté`); }
+      else if (!settings.sources.includes(p)) {
+        settings.sources.push(p);
+        messages.push(`${path.basename(p)} ajouté`);
+      }
     } else if (/\.csv$/i.test(p)) {
       if (!scan) analyse();
       const r = importCsv(p);
-      messages.push(`${path.basename(p)} : ${r.added} références importées` + (r.unknown.length ? ` ; décos inconnues : ${r.unknown.join(', ')}` : ''));
+      messages.push(
+        `${path.basename(p)} : ${r.added} références importées` + (r.unknown.length ? ` ; décos inconnues : ${r.unknown.join(', ')}` : ''),
+      );
     } else {
       messages.push(`${path.basename(p)} : déposez un dossier déco ou un fichier CSV`);
     }
@@ -158,12 +179,16 @@ let runningDone = null; // promesse de fin du lot en cours
 
 async function generate(win, { dossiers, force }) {
   if (running) return { error: 'Un lot est déjà en cours.' };
-  if (!settings.outDir) return { error: 'Choisissez d\'abord un dossier de sortie.' };
+  if (!settings.outDir) return { error: "Choisissez d'abord un dossier de sortie." };
   const batch = prepare({ dossiers, force });
   running = new AbortController();
   let finished;
-  runningDone = new Promise(r => { finished = r; });
-  const send = e => { if (!win.isDestroyed()) win.webContents.send('progress', e); };
+  runningDone = new Promise(r => {
+    finished = r;
+  });
+  const send = e => {
+    if (!win.isDestroyed()) win.webContents.send('progress', e);
+  };
   send({ type: 'begin', total: batch.plan.renders.length + batch.plan.copies.length, images: batch.plan.counts.images });
   try {
     const result = await core.runBatch(batch, { signal: running.signal, onEvent: send });
@@ -185,9 +210,18 @@ const thumbs = new Map();
 async function thumb(file, height = 240) {
   const key = `${file}|${height}`;
   if (!thumbs.has(key)) {
-    thumbs.set(key, sharp(file).resize({ height }).jpeg({ quality: 80 }).toBuffer()
-      .then(b => `data:image/jpeg;base64,${b.toString('base64')}`)
-      .catch(e => { log.warn(`Vignette impossible (${file}) : ${e.message}`); return null; }));
+    thumbs.set(
+      key,
+      sharp(file)
+        .resize({ height })
+        .jpeg({ quality: 80 })
+        .toBuffer()
+        .then(b => `data:image/jpeg;base64,${b.toString('base64')}`)
+        .catch(e => {
+          log.warn(`Vignette impossible (${file}) : ${e.message}`);
+          return null;
+        }),
+    );
   }
   return thumbs.get(key);
 }
@@ -206,12 +240,18 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false },
   });
   // macOS garde toujours une barre de menus : menu minimal (à propos, copier-coller, quitter) au lieu de celui d'Electron.
-  if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]));
+  if (process.platform === 'darwin')
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]));
   else win.removeMenu();
   win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   ipcMain.handle('analyse', () => {
-    try { return analyse(); } catch (e) { log.error(e); throw e; }
+    try {
+      return analyse();
+    } catch (e) {
+      log.error(e);
+      throw e;
+    }
   });
   ipcMain.handle('choose-folder', async (_, kind) => {
     const r = await dialog.showOpenDialog(win, {
@@ -304,11 +344,17 @@ function migrateUserData() {
 
 app.whenReady().then(() => {
   let migrated = null;
-  try { migrated = migrateUserData(); } catch (e) { migrated = e; }
+  try {
+    migrated = migrateUserData();
+  } catch (e) {
+    migrated = e;
+  }
   core.configureLog({ dir: logsDir() });
   if (migrated instanceof Error) log.warn(`Reprise des réglages de l'ancienne version impossible : ${migrated.message}`);
   else if (migrated) log.info(`Réglages et logs repris de l'ancienne version : ${migrated}`);
-  log.info(`Démarrage de ${app.getName()} ${app.getVersion()} — ${os.type()} ${os.release()} ${process.arch}, Electron ${process.versions.electron}`);
+  log.info(
+    `Démarrage de ${app.getName()} ${app.getVersion()} — ${os.type()} ${os.release()} ${process.arch}, Electron ${process.versions.electron}`,
+  );
   loadSettings();
   log.info(`GAMME : ${settings.gamme || 'non choisie'} — sortie : ${settings.outDir || 'non choisie'}`);
   createWindow();
