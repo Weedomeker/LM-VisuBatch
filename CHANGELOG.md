@@ -2,6 +2,13 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.4.0] — 2026-09-25
+
+### Ajouté
+- Bouton **?** dans la barre d'en-tête : aide sur le nommage des visuels sources (au 10ème)
+  et les fichiers requis pour chacun des 7 types de visuels.
+- Développement : les scripts npm se lancent depuis la racine du dépôt (`npm install`, `npm run dev`, `npm test`…).
+
 ## [0.3.5] — 2026-09-24
 
 ### Corrigé
