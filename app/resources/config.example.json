@@ -1,0 +1,11 @@
+{
+  "_commentaire": "Copiez ce fichier sous le nom config.json dans votre dossier GAMME et adaptez les valeurs.",
+  "client": "Nom du client",
+  "catalogue": "",
+  "refPattern": "9\\d{7}",
+  "outputFolder": " LM WEB 2025",
+  "formats": ["100x210", "100x255", "125x210", "125x255", "150x210", "150x255"],
+  "finitions": ["MAT", "BRILLANT"],
+  "motifPattern": "au\\s*10\\s*[èée]m",
+  "uniPrefix": "ULM"
+}
