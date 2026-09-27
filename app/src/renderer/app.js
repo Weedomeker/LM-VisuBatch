@@ -571,17 +571,17 @@ $('#opt-corps').addEventListener('click', async e => {
   if (e.target.closest('#ouvrir-logs')) api.openLogs();
 });
 
-// --- Depot de fichiers ---
+// --- Dépôt de fichiers ---
 let dragCpt = 0;
 
 function cibleDepot() {
-  if (state.ecran === 'accueil') return { titre: 'Deposez le dossier GAMME', aide: "La gamme s'ouvre avec sa sortie memorisee." };
+  if (state.ecran === 'accueil') return { titre: 'Déposez le dossier GAMME', aide: "La gamme s'ouvre avec sa sortie mémorisée." };
   if (state.courant) {
     const d = courant();
     const manquants = d?.formats.filter(f => !f.motif) ?? [];
-    if (manquants.length) return { titre: 'Deposez le motif au 10eme', aide: manquants.map(f => `${f.format.replace('x',' x ')}${f.cote ? ' ' + f.cote : ''}`).join(', ') };
+    if (manquants.length) return { titre: 'Déposez le motif au 10ème', aide: manquants.map(f => `${f.format.replace('x',' × ')}${f.cote ? ' ' + f.cote : ''}`).join(', ') };
   }
-  return { titre: 'Depot impossible ici', aide: "Ouvrez la fiche d'une deco dont un motif manque." };
+  return { titre: 'Dépôt impossible ici', aide: "Ouvrez la fiche d'une déco dont un motif manque." };
 }
 
 document.addEventListener('dragenter', e => {
@@ -601,7 +601,7 @@ document.addEventListener('drop', async e => {
   for (const m of msgs) message(m);
   await refresh();
   if (state.data?.deco) afficherEcran('liste');
-  const nouveau = state.data?.deco?.find(d => d.depot && msgs.some(m => m.startsWith(`${d.dossier} ajoute`)));
+  const nouveau = state.data?.deco?.find(d => d.depot && msgs.some(m => m.startsWith(`${d.dossier} ajouté`)));
   if (nouveau) openTiroir(nouveau.dossier);
 });
 
