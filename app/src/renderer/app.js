@@ -371,3 +371,200 @@ $('#retour-liste').addEventListener('click', () => {
   afficherEcran('liste'); renderListe(); renderLot();
 });
 $('#ouvrir-sortie-bilan').addEventListener('click', () => api.openOutput());
+
+// --- Fiche déco ---
+const courant = () => state.data?.deco?.find(d => d.dossier === state.courant);
+
+function openTiroir(dossier) {
+  state.courant = dossier;
+  $('#tiroir-fond').hidden = false;
+  $('#tiroir').hidden = false;
+  renderListe();
+  renderFiche();
+}
+
+function closeTiroir() {
+  $('#tiroir-fond').hidden = true;
+  $('#tiroir').hidden = true;
+  state.courant = null;
+  if (state.ecran === 'liste') renderListe();
+}
+
+$('#tiroir-fermer').addEventListener('click', closeTiroir);
+$('#tiroir-fond').addEventListener('click', closeTiroir);
+
+function renderFiche() {
+  if (!state.courant) return;
+  const d = courant();
+  if (!d) { closeTiroir(); return; }
+  const bloque = !d.refs && !d.depot;
+  $('#tiroir-titre').textContent = d.dossier.toUpperCase();
+
+  const statuts = [];
+  if (bloque) statuts.push(`<span class="badge bloque" style="margin:0">sans référence</span>`);
+  else {
+    if (d.stats.images > 0) statuts.push(`<span class="badge afaire" style="margin:0">${plural(d.stats.images,'image')} à faire</span>`);
+    if (d.stats.blocked > 0) statuts.push(`<span class="badge depose" style="margin:0">${plural(d.stats.blocked,'impossible')}</span>`);
+    if (!d.stats.images && !d.stats.blocked && d.stats.upToDate) statuts.push(`<span class="badge ok" style="margin:0">à jour</span>`);
+  }
+
+  $('#tiroir-corps').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">${statuts.join('')}</div>
+    <h2>Références</h2>
+    ${renderRefs(d)}
+    <h2>Motifs au 10ème</h2>
+    ${renderMotifs(d)}
+    <h2>Visuels</h2>
+    ${renderVisuels(d)}
+    <div class="tiroir-pied" style="margin:28px -24px -32px;padding:14px 20px;border-top:1px solid var(--trait);display:flex;align-items:center;gap:16px">
+      <span class="aide" style="flex:1">${esc(resumerFiche(d))}</span>
+      <button class="principal" id="fiche-generer" ${bloque ? 'disabled' : ''}>Générer cette déco</button>
+    </div>`;
+
+  for (const img of $('#tiroir-corps').querySelectorAll('img[data-motif]'))
+    api.thumb(img.dataset.motif, Number(img.dataset.h)||300).then(src => { if (src) img.src = src; });
+
+  bindFiche(d);
+}
+
+function renderRefs(d) {
+  const sansRef = !d.refs && !d.depot;
+  const uniqueRefs = [...new Map(d.formats.flatMap(f => f.refs).map(r => [r.ref, r])).values()];
+  const puces = uniqueRefs.map(r =>
+    `<span class="ref ${r.origine}">
+      ${esc(r.ref)} <small>${esc(r.finition ? r.finition.toLowerCase() : 'sans finition')}</small>
+      ${r.origine === 'saisie' ? `<button data-retirer-ref-global="${esc(r.ref)}" aria-label="Retirer ${esc(r.ref)}">×</button>` : ''}
+    </span>`).join('');
+
+  return `<div class="refs">
+    ${puces || (sansRef ? `<span style="color:var(--rouge);font-weight:700;font-size:var(--t-petit)">sans référence</span>` : '')}
+    <span class="ajout-ref">
+      <input inputmode="numeric" maxlength="8" placeholder="9xxxxxxx" aria-label="Nouvelle référence">
+      <select aria-label="Finition"><option value="MAT">mat</option><option value="BRILLANT">brillant</option><option value="">sans</option></select>
+      <button class="secondaire" data-ajouter-ref>+ Ajouter</button>
+    </span>
+  </div>
+  <p class="aide legende-refs">Les références en bleu sont saisies ici ; les autres sont lues dans les noms de fichiers du dossier.</p>`;
+}
+
+function renderMotifs(d) {
+  const rows = d.formats.map(f => {
+    const nomAttendu = `${d.dossier} ${f.format.replace('x',' × ')}${f.cote ? ' ' + f.cote : ''} au 10ème.jpg`;
+    const statut = f.motif
+      ? `<span class="motif-ok">présent</span>`
+      : `<span style="display:grid;gap:2px;justify-items:end"><span class="motif-absent">manquant</span><button class="lien" data-deposer="${esc(f.key)}" style="font-size:var(--t-petit)">Déposer le motif…</button></span>`;
+    return `<tr data-key="${esc(f.key)}">
+      <td class="format">${esc(f.format.replace('x',' × '))}${f.cote ? ' ' + esc(f.cote.toLowerCase()) : ''}</td>
+      <td style="font-family:monospace;font-size:var(--t-petit);color:var(--doux)">${esc(nomAttendu)}</td>
+      <td style="text-align:right">${statut}</td>
+    </tr>`;
+  }).join('');
+  return `<table><thead><tr><th>Format</th><th>Fichier attendu</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderVisuels(d) {
+  const actifs = state.data?.settings?.types ?? TYPES.map(t => t[0]);
+  const bloque = !d.refs && !d.depot;
+  const impCodes = new Set();
+  for (const p of d.impossibles) for (const [code] of TYPES) if (p.includes(code)) impCodes.add(code);
+
+  const tuiles = actifs.map(code => {
+    let tuileHtml, labelCls, labelTxt;
+    if (bloque) {
+      tuileHtml = `<div class="visuel-afaire" style="border-color:var(--rouge);opacity:.4"></div>`;
+      labelCls = 'bloque'; labelTxt = 'bloqué';
+    } else if (impCodes.has(code)) {
+      tuileHtml = `<div class="visuel-manquant"></div>`;
+      labelCls = 'manquant'; labelTxt = 'motif manquant';
+    } else {
+      tuileHtml = `<div class="visuel-afaire"></div>`;
+      labelCls = 'afaire'; labelTxt = 'à faire';
+    }
+    return `<div class="visuel-tuile">
+      ${tuileHtml}
+      <span class="visuel-legende"><strong>${esc(code)}</strong> <span class="${labelCls}">${labelTxt}</span></span>
+    </div>`;
+  });
+  return `<div class="visuels-grille">${tuiles.join('')}</div>`;
+}
+
+function resumerFiche(d) {
+  const bloque = !d.refs && !d.depot;
+  if (bloque) return 'Déco bloquée — référence manquante ou invalide.';
+  const images = d.stats.images, imp = d.stats.blocked;
+  if (!images && !imp) return 'Toutes les images sont à jour.';
+  return [images ? plural(images,'image') + ' à produire' : '', imp ? plural(imp,'impossible') : ''].filter(Boolean).join(' · ');
+}
+
+function bindFiche(d) {
+  $('#tiroir-corps').addEventListener('click', async e => {
+    const retirerG = e.target.closest('[data-retirer-ref-global]');
+    if (retirerG) {
+      const ref = retirerG.dataset.retirerRefGlobal;
+      for (const f of d.formats) {
+        const saisies = f.refs.filter(r => r.origine === 'saisie' && r.ref !== ref).map(({ref,finition}) => ({ref,finition}));
+        if (f.refs.some(r => r.ref === ref && r.origine === 'saisie'))
+          await api.setRefs(d.chemin, f.key, saisies);
+      }
+      return refresh();
+    }
+    if (e.target.matches('[data-ajouter-ref]')) {
+      const input = $('#tiroir-corps').querySelector('.ajout-ref input');
+      const sel = $('#tiroir-corps').querySelector('.ajout-ref select');
+      const ref = input.value.trim();
+      const regex = state.data?.settings?.refPattern || '9\\d{7}';
+      try { if (!new RegExp('^(?:' + regex + ')$').test(ref)) { message('Référence invalide selon le pattern configuré.', true); return; } }
+      catch { message('Pattern de référence invalide.', true); return; }
+      const finition = sel.value;
+      for (const f of d.formats) {
+        const saisies = f.refs.filter(r => r.origine === 'saisie').map(({ref:r,finition:fin}) => ({ref:r,finition:fin}));
+        if (!saisies.find(s => s.ref === ref)) await api.setRefs(d.chemin, f.key, [...saisies, {ref, finition}]);
+      }
+      message(`Référence ${ref} ajoutée.`); refresh(); return;
+    }
+    const deposer = e.target.closest('[data-deposer]');
+    if (deposer) { message('Glissez le fichier motif sur la fenêtre pour le déposer.'); return; }
+    if (e.target.matches('#fiche-generer')) {
+      state.coches.clear(); state.coches.add(d.dossier);
+      closeTiroir(); lancer(); return;
+    }
+  });
+}
+
+// --- Options tiroir ---
+function ouvrirOptions() {
+  state.optionsOuvert = true;
+  $('#opt-fond').hidden = false;
+  $('#opt-tiroir').hidden = false;
+  renderOptions();
+}
+function fermerOptions() {
+  state.optionsOuvert = false;
+  $('#opt-fond').hidden = true;
+  $('#opt-tiroir').hidden = true;
+}
+function renderOptions() {
+  if (!state.data?.settings) return;
+  renderTypes();
+  for (const b of document.querySelectorAll('[data-rangement]'))
+    b.setAttribute('aria-checked', b.dataset.rangement === state.data.settings.rangement);
+  const actifs = state.data.settings.types ?? TYPES.map(t => t[0]);
+  $('#opt-types-resume').textContent = actifs.length === TYPES.length
+    ? `${actifs.length} types actifs — tous`
+    : `${actifs.length} / ${TYPES.length} types actifs`;
+  const outDir = state.data.settings.outDir || '…';
+  const rang = state.data.settings.rangement;
+  const ligne = rang === 'decor' ? `${outDir}\n  DÉCO\n    REF_TYPE.jpg` : `${outDir}\n  REF_TYPE.jpg`;
+  $('#opt-apercu').textContent = ligne;
+}
+
+$('#btn-options').addEventListener('click', e => { e.stopPropagation(); state.optionsOuvert ? fermerOptions() : ouvrirOptions(); });
+$('#opt-fermer').addEventListener('click', fermerOptions);
+$('#opt-fond').addEventListener('click', fermerOptions);
+
+$('#opt-corps').addEventListener('click', async e => {
+  e.stopPropagation();
+  const rangement = e.target.closest('[data-rangement]');
+  if (rangement) { await api.setOption('rangement', rangement.dataset.rangement); refresh(); renderOptions(); }
+  if (e.target.closest('#ouvrir-logs')) api.openLogs();
+});
