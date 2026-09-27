@@ -570,3 +570,61 @@ $('#opt-corps').addEventListener('click', async e => {
   if (rangement) { await api.setOption('rangement', rangement.dataset.rangement); refresh(); renderOptions(); }
   if (e.target.closest('#ouvrir-logs')) api.openLogs();
 });
+
+// --- Depot de fichiers ---
+let dragCpt = 0;
+
+function cibleDepot() {
+  if (state.ecran === 'accueil') return { titre: 'Deposez le dossier GAMME', aide: "La gamme s'ouvre avec sa sortie memorisee." };
+  if (state.courant) {
+    const d = courant();
+    const manquants = d?.formats.filter(f => !f.motif) ?? [];
+    if (manquants.length) return { titre: 'Deposez le motif au 10eme', aide: manquants.map(f => `${f.format.replace('x',' x ')}${f.cote ? ' ' + f.cote : ''}`).join(', ') };
+  }
+  return { titre: 'Depot impossible ici', aide: "Ouvrez la fiche d'une deco dont un motif manque." };
+}
+
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer || ![...e.dataTransfer.types].includes('Files')) return;
+  e.preventDefault(); dragCpt++;
+  const c = cibleDepot();
+  $('#depot-titre').textContent = c.titre;
+  $('#depot-aide').textContent = c.aide;
+  $('#depot').hidden = false;
+});
+document.addEventListener('dragover', e => { if (!$('#depot').hidden) e.preventDefault(); });
+document.addEventListener('dragleave', () => { if (--dragCpt <= 0) { dragCpt = 0; $('#depot').hidden = true; } });
+document.addEventListener('drop', async e => {
+  e.preventDefault(); dragCpt = 0; $('#depot').hidden = true;
+  if (!e.dataTransfer.files.length) return;
+  const msgs = await api.drop(e.dataTransfer.files);
+  for (const m of msgs) message(m);
+  await refresh();
+  if (state.data?.deco) afficherEcran('liste');
+  const nouveau = state.data?.deco?.find(d => d.depot && msgs.some(m => m.startsWith(`${d.dossier} ajoute`)));
+  if (nouveau) openTiroir(nouveau.dossier);
+});
+
+// --- Aide ---
+$('#btn-aide').addEventListener('click', () => { $('#aide-fond').hidden = false; $('#aide-modale').setAttribute('open',''); });
+$('#aide-fermer').addEventListener('click', fermerAide);
+$('#aide-fond').addEventListener('click', fermerAide);
+function fermerAide() { $('#aide-fond').hidden = true; $('#aide-modale').removeAttribute('open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!$('#tiroir').hidden) { closeTiroir(); return; }
+    if (!$('#opt-tiroir').hidden) { fermerOptions(); return; }
+    if ($('#aide-modale').hasAttribute('open')) { fermerAide(); return; }
+  }
+});
+
+// --- Init ---
+async function init() {
+  renderAccueil();
+  await refresh();
+  if (state.data?.deco) { afficherEcran('liste'); renderListe(); renderLot(); }
+}
+
+init();
+window.addEventListener('rc:saved', () => refresh());
