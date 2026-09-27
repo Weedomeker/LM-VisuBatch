@@ -251,6 +251,7 @@ function renderLot() {
 
 // --- Génération ---
 async function lancer() {
+  if (state.enCours) return;
   const dossiers = [...state.coches];
   state.enCours = true;
   afficherEcran('generation');
@@ -272,17 +273,20 @@ async function lancer() {
   }, { once: true });
 
   const result = await api.generate({ dossiers, force: $('#tout-refaire').checked });
-  state.enCours = false;
-  state.bilan = result;
-  $('#tout-refaire').checked = false;
-
-  if (result.error) {
-    message(result.error, true);
-    afficherEcran('liste'); renderListe(); renderLot();
-  } else {
-    afficherEcran('bilan'); renderBilan();
+  try {
+    state.enCours = false;
+    state.bilan = result;
+    $('#tout-refaire').checked = false;
+    if (result.error) {
+      message(result.error, true);
+      afficherEcran('liste'); renderListe(); renderLot();
+    } else {
+      afficherEcran('bilan'); renderBilan();
+    }
+    refresh();
+  } finally {
+    state.enCours = false;
   }
-  refresh();
 }
 
 function renderLignesGen(dossiers, items) {
@@ -304,7 +308,7 @@ $('#generer').addEventListener('click', lancer);
 api.onProgress(e => {
   if (!state.enCours || state.ecran !== 'generation') return;
   const barre = $('#gen-barre-globale'), texte = $('#gen-texte-globale');
-  if (!barre) return;
+  if (!barre || !texte) return;
   if (e.type === 'begin') { texte.textContent = `${plural(e.images,'image')} à produire…`; return; }
   barre.style.width = `${(e.done / Math.max(1, e.total)) * 100}%`;
   if (e.type === 'start') {
