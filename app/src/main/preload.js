@@ -17,4 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   log: (level, text) => ipcRenderer.invoke('log', level, text),
   addSource: () => ipcRenderer.invoke('add-source'),
   onProgress: fn => ipcRenderer.on('progress', (_, e) => fn(e)),
+  loadClientConfig: () => ipcRenderer.invoke('config-client:load'),
+  saveClientConfig: config => ipcRenderer.invoke('config-client:save', config),
+  browseCatalogue: () => ipcRenderer.invoke('config-client:browse-catalogue'),
 });
