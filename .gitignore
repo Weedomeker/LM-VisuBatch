@@ -16,6 +16,11 @@ inventaire.csv
 app/.superpowers/
 .superpowers/
 
+# Fichiers de design/travail locaux
+design_handoff_visubatch_prototype/
+mockup-reglages-client.html
+prompt-redesign.md
+
 # Réglages utilisateur (générés au runtime)
 *.json.bak
 
