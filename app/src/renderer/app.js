@@ -145,6 +145,7 @@ document.addEventListener('click', async e => {
 const incomplet = d => d.impossibles.length > 0 || d.problems.length > 0;
 
 function renderListe() {
+  if (!state.data?.deco) return;
   for (const b of document.querySelectorAll('[data-filtre]'))
     b.setAttribute('aria-checked', b.dataset.filtre === state.filtre);
   const q = state.recherche.trim().toLowerCase();
@@ -178,12 +179,11 @@ function renderListe() {
 
     // badges statut
     const badgesStatut = [];
-    if (bloque) badgesStatut.push(`<span class="badge bloque">${d.refs ? 'référence invalide' : 'sans référence'}</span>`);
+    if (bloque) badgesStatut.push(`<span class="badge bloque">sans référence</span>`);
     else {
       if (d.stats.images > 0) badgesStatut.push(`<span class="badge afaire">${plural(d.stats.images,'image')} à faire</span>`);
       if (imp.size) badgesStatut.push(`<span class="badge depose">motif manquant</span>`);
       if (!d.stats.images && !imp.size && d.stats.upToDate) badgesStatut.push(`<span class="badge ok">à jour</span>`);
-      if (!d.refs && !d.depot) badgesStatut.push(`<span class="badge ok">sans référence</span>`);
     }
 
     const coche = state.coches.has(d.dossier) && !bloque;
