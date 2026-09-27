@@ -423,13 +423,11 @@ function renderFiche() {
 
   for (const img of $('#tiroir-corps').querySelectorAll('img[data-motif]'))
     api.thumb(img.dataset.motif, Number(img.dataset.h)||300).then(src => { if (src) img.src = src; });
-
-  bindFiche(d);
 }
 
 function renderRefs(d) {
   const sansRef = !d.refs && !d.depot;
-  const uniqueRefs = [...new Map(d.formats.flatMap(f => f.refs).map(r => [r.ref, r])).values()];
+  const uniqueRefs = [...new Map(d.formats.flatMap(f => f.refs).map(r => [`${r.ref}|${r.finition}`, r])).values()];
   const puces = uniqueRefs.map(r =>
     `<span class="ref ${r.origine}">
       ${esc(r.ref)} <small>${esc(r.finition ? r.finition.toLowerCase() : 'sans finition')}</small>
@@ -476,6 +474,9 @@ function renderVisuels(d) {
     } else if (impCodes.has(code)) {
       tuileHtml = `<div class="visuel-manquant"></div>`;
       labelCls = 'manquant'; labelTxt = 'motif manquant';
+    } else if (d.stats.images === 0) {
+      tuileHtml = `<div class="visuel-afaire" style="opacity:.35"></div>`;
+      labelCls = 'ok'; labelTxt = 'à jour';
     } else {
       tuileHtml = `<div class="visuel-afaire"></div>`;
       labelCls = 'afaire'; labelTxt = 'à faire';
@@ -496,40 +497,41 @@ function resumerFiche(d) {
   return [images ? plural(images,'image') + ' à produire' : '', imp ? plural(imp,'impossible') : ''].filter(Boolean).join(' · ');
 }
 
-function bindFiche(d) {
-  $('#tiroir-corps').addEventListener('click', async e => {
-    const retirerG = e.target.closest('[data-retirer-ref-global]');
-    if (retirerG) {
-      const ref = retirerG.dataset.retirerRefGlobal;
-      for (const f of d.formats) {
-        const saisies = f.refs.filter(r => r.origine === 'saisie' && r.ref !== ref).map(({ref,finition}) => ({ref,finition}));
-        if (f.refs.some(r => r.ref === ref && r.origine === 'saisie'))
-          await api.setRefs(d.chemin, f.key, saisies);
-      }
-      return refresh();
+// Délégation unique pour la fiche (pas de rebinding à chaque renderFiche)
+$('#tiroir-corps').addEventListener('click', async e => {
+  const d = courant();
+  if (!d) return;
+  const retirerG = e.target.closest('[data-retirer-ref-global]');
+  if (retirerG) {
+    const ref = retirerG.dataset.retirerRefGlobal;
+    for (const f of d.formats) {
+      const saisies = f.refs.filter(r => r.origine === 'saisie' && r.ref !== ref).map(({ref,finition}) => ({ref,finition}));
+      if (f.refs.some(r => r.ref === ref && r.origine === 'saisie'))
+        await api.setRefs(d.chemin, f.key, saisies);
     }
-    if (e.target.matches('[data-ajouter-ref]')) {
-      const input = $('#tiroir-corps').querySelector('.ajout-ref input');
-      const sel = $('#tiroir-corps').querySelector('.ajout-ref select');
-      const ref = input.value.trim();
-      const regex = state.data?.settings?.refPattern || '9\\d{7}';
-      try { if (!new RegExp('^(?:' + regex + ')$').test(ref)) { message('Référence invalide selon le pattern configuré.', true); return; } }
-      catch { message('Pattern de référence invalide.', true); return; }
-      const finition = sel.value;
-      for (const f of d.formats) {
-        const saisies = f.refs.filter(r => r.origine === 'saisie').map(({ref:r,finition:fin}) => ({ref:r,finition:fin}));
-        if (!saisies.find(s => s.ref === ref)) await api.setRefs(d.chemin, f.key, [...saisies, {ref, finition}]);
-      }
-      message(`Référence ${ref} ajoutée.`); refresh(); return;
+    return refresh();
+  }
+  if (e.target.matches('[data-ajouter-ref]')) {
+    const input = $('#tiroir-corps').querySelector('.ajout-ref input');
+    const sel = $('#tiroir-corps').querySelector('.ajout-ref select');
+    const ref = input.value.trim();
+    const regex = state.data?.settings?.refPattern || '9\\d{7}';
+    try { if (!new RegExp('^(?:' + regex + ')$').test(ref)) { message('Référence invalide selon le pattern configuré.', true); return; } }
+    catch { message('Pattern de référence invalide.', true); return; }
+    const finition = sel.value;
+    for (const f of d.formats) {
+      const saisies = f.refs.filter(r => r.origine === 'saisie').map(({ref:r,finition:fin}) => ({ref:r,finition:fin}));
+      if (!saisies.find(s => s.ref === ref)) await api.setRefs(d.chemin, f.key, [...saisies, {ref, finition}]);
     }
-    const deposer = e.target.closest('[data-deposer]');
-    if (deposer) { message('Glissez le fichier motif sur la fenêtre pour le déposer.'); return; }
-    if (e.target.matches('#fiche-generer')) {
-      state.coches.clear(); state.coches.add(d.dossier);
-      closeTiroir(); lancer(); return;
-    }
-  });
-}
+    message(`Référence ${ref} ajoutée.`); refresh(); return;
+  }
+  const deposer = e.target.closest('[data-deposer]');
+  if (deposer) { message('Glissez le fichier motif sur la fenêtre pour le déposer.'); return; }
+  if (e.target.matches('#fiche-generer')) {
+    state.coches.clear(); state.coches.add(d.dossier);
+    closeTiroir(); lancer(); return;
+  }
+});
 
 // --- Options tiroir ---
 function ouvrirOptions() {
