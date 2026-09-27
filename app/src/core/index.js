@@ -10,9 +10,7 @@ const { acquireLock, currentLock } = require('./utils/lock');
 const { TYPES } = require('./render/renderers');
 const { setFontsDir } = require('./render/render');
 const { log, configureLog, logLot } = require('./utils/log');
-
-// Réglages des décors livrés avec l'app (uni, libellé, cadrage C), relevés sur les InDesign existants.
-const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(resources, 'gamme_deco.csv'));
+const { LM_DEFAULTS, resolveCatalogue } = require('./utils/clientConfig');
 
 /**
  * Prépare un lot : scan, contexte, manifeste et plan (rien n'est encore écrit).
@@ -27,14 +25,19 @@ const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(
  * @param {object} [o.scan] résultat de scanGamme déjà calculé
  * Les autres options (types, deco, refs, force, rangement) sont celles de buildPlan.
  */
-function prepareBatch({ root, outDir, sources, saisies, inventaire, config, reglages, resources = DEFAULT_RESOURCES, cacheDir, scan, ...selection }) {
-  if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies });
+function prepareBatch({ root, outDir, sources, saisies, inventaire, config, reglages, resources = DEFAULT_RESOURCES, cacheDir, scan, clientConfig, ...selection }) {
+  const resolvedConfig = clientConfig || LM_DEFAULTS;
+  if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies, clientConfig: resolvedConfig });
+  const cataloguePath = config
+    ? config
+    : resolveCatalogue(resolvedConfig, root || '', path.join(resources, 'gamme_deco.csv'));
   const ctx = createContext({
     root,
     rows: scan ? scan.rows : readInventaire(inventaire),
-    deco: reglages || (config ? readDecors(config) : defaultReglages(resources)),
+    deco: reglages || readDecors(cataloguePath),
     resources,
     cacheDir: cacheDir || path.join(outDir, '.cache'),
+    clientConfig: resolvedConfig,
   });
   setFontsDir(path.join(ctx.resources, 'fonts'));
   const manifest = new Manifest(outDir);
@@ -79,6 +82,6 @@ async function runBatch({ ctx, manifest, plan, selection = {} }, options = {}) {
 }
 
 module.exports = {
-  prepareBatch, runBatch, runPlan, defaultJobs, defaultReglages, currentLock, log, configureLog,
-  scanGamme, readInventaire, writeInventaire, TYPES, FORMATS,
+  prepareBatch, runBatch, runPlan, defaultJobs, currentLock, log, configureLog,
+  scanGamme, readInventaire, writeInventaire, TYPES, FORMATS, LM_DEFAULTS,
 };

@@ -35,7 +35,7 @@ function saveSettings() {
 
 // Réglages des décors : ceux livrés avec l'app, corrigés par ceux saisis dans l'app.
 function mergedReglages() {
-  const byDossier = new Map(core.defaultReglages(RESOURCES).map(r => [r.dossier, r]));
+  const byDossier = new Map(readCsv(path.join(RESOURCES, 'gamme_deco.csv')).map(r => [r.dossier, r]));
   for (const [dossier, r] of Object.entries(settings.reglages)) byDossier.set(dossier, { ...byDossier.get(dossier), dossier, ...r });
   return [...byDossier.values()];
 }
