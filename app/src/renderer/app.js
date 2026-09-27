@@ -25,6 +25,7 @@ async function refresh() {
   try {
     state.data = await api.analyse();
     if (state.data?.needs === 'config') {
+      state.analyse = false;
       window.ouvrirReglagesClient(true);
       return renderLot();
     }
