@@ -46,7 +46,7 @@ button { cursor: pointer; }
 .marque { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.28em; flex: none; line-height: 1; }
 .marque-lm { color: var(--orange); font-weight: 700; }
 .marque-nom { color: var(--surface); font-weight: 400; }
-.barre-info { display: flex; gap: 8px; align-items: baseline; font-size: 12px; min-width: 0; }
+.barre-info { display: flex; gap: 8px; align-items: baseline; font-size: var(--t-petit); min-width: 0; }
 .barre-info b { color: var(--gris-clair); flex: none; }
 .barre-info-chemin { color: var(--gris-clair); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .barre .lien { color: var(--surface); }
