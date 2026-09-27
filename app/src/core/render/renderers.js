@@ -12,8 +12,8 @@ const { extractMotif } = require('./extract-motif');
 const TYPES = ['A-01', 'A-02', 'P', 'C', 'II-01', 'II-02', 'II-03'];
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-// « LEAF Mat 100x210 », « PALMERAIE Brillant 100x210 DROIT »
-const productName = r => [r.decor.toUpperCase(), r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`, r.cote]
+// « LEAF DROIT Mat 100x210 », « PALMERAIE Brillant 100x210 »
+const productName = r => [r.decor.toUpperCase(), r.cote, r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`]
   .filter(Boolean).join(' ');
 const outputName = (r, type) => `${r.ref}-${type}-${productName(r)}.jpg`;
 
