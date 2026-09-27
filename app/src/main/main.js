@@ -227,6 +227,7 @@ function createWindow() {
   if (process.platform === 'darwin') Menu.setApplicationMenu(Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]));
   else win.removeMenu();
   win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  if (process.argv.includes('--dev') && !app.isPackaged) win.webContents.openDevTools();
 
   ipcMain.handle('analyse', () => {
     try { return analyse(); } catch (e) { log.error(e); throw e; }
