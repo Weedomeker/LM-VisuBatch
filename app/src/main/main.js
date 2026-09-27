@@ -9,6 +9,7 @@ const core = require('../core');
 const { log } = core;
 const { readCsv } = require('../core/utils/csv');
 const { formatKey } = require('../core/inventaire');
+const { LM_DEFAULTS, loadClientConfig, buildRegex, resolveCatalogue, catalogueFilename } = require('../core/utils/clientConfig');
 
 // Gabarits, pages statiques, polices et réglages livrés : dans l'app (non archivée, voir « build.asar »).
 const RESOURCES = path.join(__dirname, '..', '..', 'resources');
@@ -19,6 +20,7 @@ const RESOURCES = path.join(__dirname, '..', '..', 'resources');
 const settingsFile = () => path.join(app.getPath('userData'), 'reglages.json');
 const DEFAULTS = { gamme: '', outDir: '', rangement: 'plat', sources: [], saisies: {}, reglages: {}, types: core.TYPES };
 let settings = { ...DEFAULTS };
+let clientConfig = LM_DEFAULTS;
 
 function loadSettings() {
   try {
@@ -31,6 +33,16 @@ function loadSettings() {
 function saveSettings() {
   fs.mkdirSync(path.dirname(settingsFile()), { recursive: true });
   fs.writeFileSync(settingsFile(), JSON.stringify(settings, null, 2));
+}
+
+function loadClientConfigFromGamme() {
+  if (!settings.gamme) { clientConfig = LM_DEFAULTS; return; }
+  try {
+    clientConfig = loadClientConfig(settings.gamme) || LM_DEFAULTS;
+  } catch (e) {
+    log.warn(`config.json invalide dans ${settings.gamme} : ${e.message}`);
+    clientConfig = LM_DEFAULTS;
+  }
 }
 
 // Réglages des décors : ceux livrés avec l'app, corrigés par ceux saisis dans l'app.
@@ -53,6 +65,11 @@ function analyse() {
   if (!fs.existsSync(settings.gamme)) {
     log.warn(`Dossier GAMME introuvable : ${settings.gamme}`);
     return { settings, needs: 'gamme', error: `Dossier GAMME introuvable : ${settings.gamme}` };
+  }
+  loadClientConfigFromGamme();
+  const configPath = path.join(settings.gamme, 'config.json');
+  if (!fs.existsSync(configPath)) {
+    return { settings, needs: 'config', clientConfig: LM_DEFAULTS };
   }
   const t0 = Date.now();
   scan = core.scanGamme(settings.gamme, { sources: settings.sources, saisies: settings.saisies });
@@ -96,7 +113,7 @@ function prepare({ dossiers, force = false }) {
     root: settings.gamme,
     outDir: settings.outDir,
     scan,
-    reglages: mergedReglages(),
+    clientConfig,
     resources: RESOURCES,
     cacheDir: cacheDir(),
     types: settings.types,
@@ -113,10 +130,11 @@ function importCsv(file) {
   const rows = readCsv(file);
   let added = 0;
   const unknown = new Set();
+  const refFullRe = new RegExp(`^(${clientConfig.refPattern})$`);
   for (const r of rows) {
     const ref = (r.ref || '').trim();
     const d = scan?.deco.find(x => x.dossier === r.dossier || x.decor.toUpperCase() === (r.decor || '').toUpperCase());
-    if (!/^9\d{7}$/.test(ref) || !r.largeur || !r.hauteur) continue;
+    if (!refFullRe.test(ref) || !r.largeur || !r.hauteur) continue;
     if (!d) { unknown.add(r.dossier || r.decor); continue; }
     const dir = path.join(d.base, d.dossier);
     const k = formatKey(`${r.largeur}x${r.hauteur}`, (r.cote || '').toUpperCase());
@@ -223,6 +241,7 @@ function createWindow() {
     settings[kind === 'gamme' ? 'gamme' : 'outDir'] = r.filePaths[0];
     log.info(`Dossier ${kind === 'gamme' ? 'GAMME' : 'de sortie'} choisi : ${r.filePaths[0]}`);
     saveSettings();
+    if (kind === 'gamme') { loadClientConfigFromGamme(); scan = null; }
     return r.filePaths[0];
   });
   ipcMain.handle('set-option', (_, name, value) => {
@@ -245,7 +264,8 @@ function createWindow() {
     saveSettings();
   });
   ipcMain.handle('set-refs', (_, dir, key, refs) => {
-    const clean = refs.filter(r => /^9\d{7}$/.test(r.ref)).map(r => ({ ref: r.ref, finition: r.finition || '' }));
+    const refFullRe = new RegExp(`^(${clientConfig.refPattern})$`);
+    const clean = refs.filter(r => refFullRe.test(r.ref)).map(r => ({ ref: r.ref, finition: r.finition || '' }));
     settings.saisies[dir] ??= {};
     if (clean.length) settings.saisies[dir][key] = clean;
     else delete settings.saisies[dir][key];
@@ -263,6 +283,36 @@ function createWindow() {
   // Erreurs de l'interface, consignées dans le même journal.
   ipcMain.handle('log', (_, level, text) => {
     if (['error', 'warn', 'info'].includes(level)) log[level](`Interface : ${text}`);
+  });
+
+  ipcMain.handle('config-client:load', () => {
+    if (!settings.gamme) return { config: LM_DEFAULTS, catalogueStatus: 'fallback', autoName: catalogueFilename(LM_DEFAULTS.client) };
+    const autoName = catalogueFilename(clientConfig.client);
+    const defaultCsv = path.join(RESOURCES, 'gamme_deco.csv');
+    const resolved = resolveCatalogue(clientConfig, settings.gamme, defaultCsv);
+    const catalogueStatus = clientConfig.catalogue && resolved !== defaultCsv ? 'custom'
+      : resolved !== defaultCsv ? 'auto'
+      : 'fallback';
+    return { config: clientConfig, catalogueStatus, autoName };
+  });
+
+  ipcMain.handle('config-client:save', (_, newConfig) => {
+    if (!settings.gamme) throw new Error('Aucun dossier GAMME sélectionné');
+    const configPath = path.join(settings.gamme, 'config.json');
+    fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
+    loadClientConfigFromGamme();
+    scan = null;
+    log.info(`config.json enregistré pour ${newConfig.client}`);
+  });
+
+  ipcMain.handle('config-client:browse-catalogue', async () => {
+    const r = await dialog.showOpenDialog(win, {
+      title: 'Choisir le fichier catalogue CSV',
+      defaultPath: settings.gamme || undefined,
+      filters: [{ name: 'Fichiers CSV', extensions: ['csv'] }],
+      properties: ['openFile'],
+    });
+    return r.canceled ? null : r.filePaths[0];
   });
 }
 
