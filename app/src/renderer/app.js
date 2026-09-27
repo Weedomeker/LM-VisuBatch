@@ -26,6 +26,7 @@ async function refresh() {
     state.data = await api.analyse();
     if (state.data?.needs === 'config') {
       state.analyse = false;
+      if (state.data.settings?.gamme) renderBarre();
       window.ouvrirReglagesClient(true);
       return renderLot();
     }
