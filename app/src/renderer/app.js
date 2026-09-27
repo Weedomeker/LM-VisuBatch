@@ -140,3 +140,111 @@ document.addEventListener('click', async e => {
   const filtre = e.target.closest('[data-filtre]');
   if (filtre) { state.filtre = filtre.dataset.filtre; renderListe(); }
 });
+
+// --- Liste des décos ---
+const incomplet = d => d.impossibles.length > 0 || d.problems.length > 0;
+
+function renderListe() {
+  for (const b of document.querySelectorAll('[data-filtre]'))
+    b.setAttribute('aria-checked', b.dataset.filtre === state.filtre);
+  const q = state.recherche.trim().toLowerCase();
+  const visibles = state.data.deco.filter(d =>
+    (!q || d.dossier.toLowerCase().includes(q)) &&
+    (state.filtre === 'tous' ||
+     (state.filtre === 'afaire' && d.stats.images > 0) ||
+     (state.filtre === 'incomplets' && incomplet(d))));
+
+  const actifs = new Set(state.data.settings?.types ?? TYPES.map(t => t[0]));
+  // codes impossibles extraits des chaînes d.impossibles
+  const codesImpossibles = d => {
+    const out = new Set();
+    for (const p of d.impossibles) for (const [code] of TYPES) if (p.includes(code)) out.add(code);
+    return out;
+  };
+
+  $('#deco').innerHTML = visibles.map(d => {
+    const bloque = !d.refs && !d.depot;
+    const imp = codesImpossibles(d);
+    // filet gauche coloré
+    const filet = bloque ? 'box-shadow:inset 3px 0 0 var(--rouge)'
+      : imp.size ? 'box-shadow:inset 3px 0 0 var(--caramel)'
+      : d.dossier === state.courant ? 'box-shadow:inset 3px 0 0 var(--bleu)' : '';
+
+    // badges types par code
+    const badgesTypes = bloque ? '' : [...actifs].map(code => {
+      const cls = imp.has(code) ? 'depose' : (d.stats.images > 0 ? 'afaire' : 'ok');
+      return `<span class="badge ${cls}">${esc(code)}</span>`;
+    }).join('');
+
+    // badges statut
+    const badgesStatut = [];
+    if (bloque) badgesStatut.push(`<span class="badge bloque">${d.refs ? 'référence invalide' : 'sans référence'}</span>`);
+    else {
+      if (d.stats.images > 0) badgesStatut.push(`<span class="badge afaire">${plural(d.stats.images,'image')} à faire</span>`);
+      if (imp.size) badgesStatut.push(`<span class="badge depose">motif manquant</span>`);
+      if (!d.stats.images && !imp.size && d.stats.upToDate) badgesStatut.push(`<span class="badge ok">à jour</span>`);
+      if (!d.refs && !d.depot) badgesStatut.push(`<span class="badge ok">sans référence</span>`);
+    }
+
+    const coche = state.coches.has(d.dossier) && !bloque;
+    return `<li class="rangee" data-dossier="${esc(d.dossier)}" aria-current="${d.dossier === state.courant}" style="${filet}">
+      <input type="checkbox" aria-label="Générer ${esc(d.dossier)}" ${coche ? 'checked' : ''} ${bloque ? 'disabled' : ''}>
+      <span class="nom" title="${esc(d.dossier)}">${esc(d.dossier)}</span>
+      <span class="badges-types">${badgesTypes}</span>
+      <span class="badges-statut">${badgesStatut.join('')}</span>
+      <button class="detail-lien" data-detail aria-label="Voir la fiche de ${esc(d.dossier)}">Détail →</button>
+    </li>`;
+  }).join('') || '<li style="list-style:none;padding:32px 16px;color:var(--doux)">Aucune déco ne correspond.</li>';
+}
+
+$('#deco').addEventListener('click', e => {
+  const li = e.target.closest('li[data-dossier]');
+  if (!li) return;
+  if (e.target.matches('input[type="checkbox"]')) {
+    e.target.checked ? state.coches.add(li.dataset.dossier) : state.coches.delete(li.dataset.dossier);
+    renderLot(); return;
+  }
+  if (e.target.matches('[data-detail]')) { openTiroir(li.dataset.dossier); return; }
+});
+
+$('#recherche').addEventListener('input', e => { state.recherche = e.target.value; renderListe(); });
+$('#cocher-afaire').addEventListener('click', () => {
+  for (const d of state.data?.deco ?? []) if (d.stats.images > 0) state.coches.add(d.dossier);
+  renderListe(); renderLot();
+});
+$('#tout-decocher').addEventListener('click', () => { state.coches.clear(); renderListe(); renderLot(); });
+
+// --- Types (lot) ---
+function renderTypes() {
+  const actifs = new Set(state.data?.settings?.types ?? TYPES.map(t => t[0]));
+  $('#types').innerHTML = TYPES.map(([t, nom]) =>
+    `<label class="types-label" title="${esc(nom)}"><input type="checkbox" value="${t}" ${actifs.has(t) ? 'checked' : ''}> ${t}</label>`).join('');
+}
+$('#types').addEventListener('change', async () => {
+  const types = [...document.querySelectorAll('#types input:checked')].map(i => i.value);
+  await api.setOption('types', types); refresh();
+});
+$('#tout-refaire').addEventListener('change', renderLot);
+
+// --- Lot ---
+function renderLot() {
+  const resume = $('#resume');
+  const bouton = $('#generer');
+  if (state.enCours) return;
+  const d = state.data;
+  if (state.analyse) { resume.textContent = 'Analyse de la gamme…'; bouton.disabled = true; return; }
+  if (!d?.deco) { resume.textContent = ''; bouton.disabled = true; return; }
+  if (!d.settings.outDir) { resume.innerHTML = 'Choisissez un <strong>dossier de sortie</strong> pour générer.'; bouton.disabled = true; return; }
+  if (d.lock) { resume.innerHTML = `Lot en cours dans ce dossier par <strong>${esc(d.lock.user)}</strong> (${esc(d.lock.host)})`; }
+  const choisis = d.deco.filter(x => state.coches.has(x.dossier));
+  const refaire = $('#tout-refaire').checked;
+  const images = choisis.reduce((n, x) => n + x.stats.images + (refaire ? x.stats.upToDate : 0), 0);
+  const impossibles = choisis.reduce((n, x) => n + x.stats.blocked, 0);
+  if (!d.lock) {
+    resume.innerHTML = !choisis.length ? 'Cochez les décos à générer'
+      : `${plural(choisis.length,'déco')} : <strong>${plural(images,'image')} à produire</strong>`
+        + (impossibles ? `, ${plural(impossibles,'impossible')}` : '')
+        + (!images && !refaire ? ', tout est à jour' : '');
+  }
+  bouton.disabled = !images || !!d.lock;
+}
