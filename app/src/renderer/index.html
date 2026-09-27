@@ -20,6 +20,7 @@
       <button class="lien" data-choisir="sortie">Changer</button>
     </div>
     <button class="btn-aide" id="btn-aide" aria-label="Aide — fichiers requis">?</button>
+    <button class="secondaire" id="btn-reglages-client">⚙ Réglages client</button>
     <div class="options-wrap">
       <button class="secondaire" id="btn-options">⚙ Options</button>
       <div class="popover-options" id="popover-options" hidden>
@@ -110,6 +111,88 @@
     </div>
   </dialog>
 
+  <!-- Panneau Réglages client -->
+  <div class="rc-fond" id="rc-fond" hidden></div>
+  <div class="rc-modale" id="rc-modale" role="dialog" aria-modal="true" aria-labelledby="rc-titre" hidden>
+    <div class="rc-entete">
+      <strong class="rc-titre" id="rc-titre">Réglages client</strong>
+      <button class="tiroir-fermer" id="rc-fermer" aria-label="Fermer">✕</button>
+    </div>
+    <div class="rc-alerte" id="rc-alerte" hidden>
+      Aucune configuration trouvée — complétez les réglages pour activer l'analyse.
+    </div>
+    <div class="rc-corps">
+      <div class="rc-section">
+        <div class="rc-section-titre">Identité</div>
+        <div class="rc-champ"><label for="rc-client">Nom du client</label><input type="text" id="rc-client"></div>
+      </div>
+      <div class="rc-section">
+        <div class="rc-section-titre">Catalogue décors</div>
+        <div class="rc-champ">
+          <label>Source du catalogue</label>
+          <div class="rc-bascule" role="radiogroup" id="rc-cat-bascule">
+            <button role="radio" aria-checked="true" data-mode="auto">Auto</button>
+            <button role="radio" aria-checked="false" data-mode="perso">Fichier personnalisé</button>
+          </div>
+          <div class="rc-cat-statut" id="rc-cat-auto-statut">
+            <span class="rc-puce ok" id="rc-cat-puce"></span>
+            <span id="rc-cat-label"></span>
+          </div>
+          <div id="rc-cat-perso-wrap" hidden>
+            <div class="rc-cat-perso">
+              <input type="text" id="rc-cat-chemin" placeholder="Chemin vers le fichier CSV…">
+              <button class="secondaire" id="rc-cat-parcourir">Parcourir…</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rc-section">
+        <div class="rc-section-titre">Reconnaissance des fichiers</div>
+        <div class="rc-champ">
+          <label for="rc-ref-pattern">Pattern — Référence produit</label>
+          <input type="text" id="rc-ref-pattern" class="mono">
+          <p class="aide">Expression régulière. Ex : <code>9\d{7}</code> → 8 chiffres commençant par 9.</p>
+        </div>
+        <div class="rc-testeur">
+          <label for="rc-ref-test">Tester avec un nom de fichier</label>
+          <input type="text" id="rc-ref-test" placeholder="000 BLANC 100x210 94953622 MAT.jpg">
+          <div class="rc-testeur-res" id="rc-ref-res"></div>
+        </div>
+        <div class="rc-champ">
+          <label for="rc-motif-pattern">Pattern — Motif source</label>
+          <input type="text" id="rc-motif-pattern" class="mono">
+          <p class="aide">Identifie un fichier image comme visuel source. Ex : <code>au\s*10\s*[èée]m</code></p>
+        </div>
+        <div class="rc-testeur">
+          <label for="rc-motif-test">Tester avec un nom de fichier</label>
+          <input type="text" id="rc-motif-test" placeholder="000 BLANC 100x210 au 10ème 94956949.jpg">
+          <div class="rc-testeur-res" id="rc-motif-res"></div>
+        </div>
+      </div>
+      <div class="rc-section">
+        <div class="rc-section-titre">Génération</div>
+        <div class="rc-grille2">
+          <div class="rc-champ"><label for="rc-output">Dossier WEB (source des unis)</label><input type="text" id="rc-output"><p class="aide">Nom du sous-dossier contenant les PSD.</p></div>
+          <div class="rc-champ"><label for="rc-prefix">Préfixe couleurs unies</label><input type="text" id="rc-prefix"><p class="aide">Affiché sous forme « ULM 620 ».</p></div>
+        </div>
+      </div>
+      <div class="rc-section">
+        <div class="rc-section-titre">Formats produit</div>
+        <div class="rc-tags" id="rc-formats-tags"></div>
+        <p class="aide">Format « largeurxhauteur » en cm. Ex : 100x210</p>
+      </div>
+      <div class="rc-section">
+        <div class="rc-section-titre">Finitions</div>
+        <div class="rc-tags" id="rc-finitions-tags"></div>
+        <p class="aide">Tels qu'écrits dans les noms de fichiers (insensible à la casse).</p>
+      </div>
+    </div>
+    <div class="rc-pied">
+      <button class="secondaire" id="rc-annuler">Annuler</button>
+      <button class="principal" id="rc-enregistrer">Enregistrer</button>
+    </div>
+  </div>
+  <script src="reglages-client.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

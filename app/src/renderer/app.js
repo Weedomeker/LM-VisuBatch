@@ -24,6 +24,10 @@ async function refresh() {
   renderLot();
   try {
     state.data = await api.analyse();
+    if (state.data?.needs === 'config') {
+      window.ouvrirReglagesClient(true);
+      return renderLot();
+    }
   } catch (e) {
     message(`Analyse impossible : ${e.message}`, true);
   }
@@ -373,3 +377,5 @@ api.onProgress(e => {
 });
 
 refresh();
+
+window.addEventListener('rc:saved', () => refresh());

@@ -238,3 +238,66 @@ td.format { font-weight: 700; white-space: nowrap; }
 .aide-statique { color: var(--doux); font-style: italic; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Panneau Réglages client */
+.rc-fond { position: fixed; inset: 0; background: rgba(31,43,42,0.32); z-index: 150; }
+.rc-fond[hidden] { display: none !important; }
+.rc-modale {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: min(640px, 96vw); max-height: 92vh;
+  background: var(--surface); border: 1px solid var(--trait); border-radius: 6px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column; z-index: 151;
+}
+.rc-entete {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; border-bottom: 1px solid var(--trait); flex: none;
+}
+.rc-titre { font-size: var(--t-titre); font-weight: 700; }
+.rc-alerte {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: var(--caramel-clair);
+  border-bottom: 1px solid #e8c9a0; flex: none; font-size: var(--t-petit);
+}
+.rc-alerte[hidden] { display: none !important; }
+.rc-corps { overflow-y: auto; padding: 20px 24px 24px; flex: 1; display: grid; gap: 18px; }
+.rc-section { display: grid; gap: 10px; }
+.rc-section-titre {
+  font-size: var(--t-petit); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--doux); padding-bottom: 6px; border-bottom: 1px solid var(--trait);
+}
+.rc-champ { display: grid; gap: 4px; }
+.rc-champ label { font-size: var(--t-petit); font-weight: 700; }
+.rc-champ input[type="text"] {
+  padding: 7px 10px; border: 1px solid var(--trait); border-radius: 3px;
+  background: var(--surface); font: inherit; color: inherit; width: 100%;
+}
+.rc-champ input[type="text"]:focus { outline: 2px solid var(--vdg); outline-offset: 2px; border-color: var(--vdg); }
+.rc-champ input.mono { font-family: monospace; font-size: var(--t-petit); }
+.rc-grille2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rc-testeur { background: var(--fond); border-radius: 3px; padding: 10px 12px; display: grid; gap: 4px; }
+.rc-testeur label { font-size: var(--t-petit); color: var(--doux); }
+.rc-testeur input { padding: 6px 9px; border: 1px solid var(--trait); border-radius: 3px; background: var(--surface); font-family: monospace; font-size: var(--t-petit); width: 100%; }
+.rc-testeur-res { font-size: var(--t-petit); font-weight: 700; min-height: 18px; padding-top: 4px; }
+.rc-testeur-res.ok { color: var(--vdg-fonce); }
+.rc-testeur-res.err { color: var(--caramel); }
+.rc-bascule { display: inline-flex; border: 1px solid var(--trait); border-radius: 3px; overflow: hidden; }
+.rc-bascule button { background: var(--surface); border: 0; padding: 6px 14px; font: inherit; font-size: var(--t-petit); cursor: pointer; }
+.rc-bascule button + button { border-left: 1px solid var(--trait); }
+.rc-bascule button[aria-checked="true"] { background: var(--vdg-clair); color: var(--vdg-fonce); font-weight: 700; }
+.rc-cat-statut { display: flex; align-items: center; gap: 8px; font-size: var(--t-petit); color: var(--doux); margin-top: 6px; }
+.rc-puce { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.rc-puce.ok { background: var(--vdg); }
+.rc-puce.absent { background: var(--caramel); }
+.rc-puce.fallback { background: var(--trait); }
+.rc-cat-perso { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.rc-cat-perso input { flex: 1; padding: 7px 10px; border: 1px solid var(--trait); border-radius: 3px; background: var(--surface); font: inherit; font-size: var(--t-petit); }
+.rc-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.rc-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px 3px 10px; background: var(--fond); border: 1px solid var(--trait); border-radius: 3px; font-size: var(--t-petit); }
+.rc-tag button { background: none; border: 0; padding: 0 2px; color: var(--doux); cursor: pointer; font-size: 13px; line-height: 1; }
+.rc-tag button:hover { color: var(--rouge); }
+.rc-tag-ajout { display: inline-flex; gap: 4px; }
+.rc-tag-ajout input { width: 80px; padding: 3px 8px; border: 1px solid var(--trait); border-radius: 3px; font: inherit; font-size: var(--t-petit); }
+.rc-tag-ajout button { padding: 3px 10px; background: var(--surface); border: 1px solid var(--trait); border-radius: 3px; font: inherit; font-size: var(--t-petit); cursor: pointer; }
+.rc-tag-ajout button:hover { border-color: var(--vdg); color: var(--vdg); }
+.rc-pied { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid var(--trait); flex: none; }
