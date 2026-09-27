@@ -6,6 +6,7 @@ const TYPES = [
 ];
 const PX_PAR_CM = 0.95;
 const GAMMES_KEY = 'vb-gammes-recentes';
+const court = p => (p ? p.split(/[\\/]/).filter(Boolean).slice(-2).join(' › ') : 'non choisi');
 
 // Motifs requis par type (format|cote, '' = sans cote)
 const MOTIFS_PAR_TYPE = {
@@ -33,8 +34,10 @@ const state = {
 
 // --- Navigation ---
 function afficherEcran(nom) {
-  for (const id of ['ecran-accueil','ecran-liste','ecran-generation','ecran-bilan'])
-    document.getElementById(id).hidden = (id !== 'ecran-' + nom);
+  for (const id of ['ecran-accueil','ecran-liste','ecran-generation','ecran-bilan']) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = (id !== 'ecran-' + nom);
+  }
   state.ecran = nom;
   $('#btn-options').hidden = (nom !== 'liste');
   $('#barre-gamme').hidden = (nom === 'accueil');
@@ -90,7 +93,6 @@ function message(text, erreur = false) {
 function renderBarre() {
   const s = state.data?.settings;
   if (!s) return;
-  const court = p => (p ? p.split(/[\\/]/).filter(Boolean).slice(-2).join(' › ') : 'non choisi');
   $('#chemin-gamme').textContent = court(s.gamme);
   $('#chemin-gamme').title = s.gamme ?? '';
   $('#chemin-sortie').textContent = court(s.outDir);
@@ -103,7 +105,6 @@ function renderAccueil() {
   const gammes = getGammesRecentes();
   const s = state.data?.settings;
   const outDir = s?.outDir || '';
-  const court = p => (p ? p.split(/[\\/]/).filter(Boolean).slice(-2).join(' › ') : 'non choisi');
   $('#accueil-sortie-chemin').textContent = court(outDir);
   $('#accueil-sortie-chemin').title = outDir;
 
