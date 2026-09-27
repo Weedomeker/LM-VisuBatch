@@ -1,4 +1,5 @@
 const plural = (n, one, many = one + 's') => `${n.toLocaleString('fr-FR')} ${n > 1 ? many : one}`;
+const capitalize = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
 
 const TYPES = [
   ['A-01','Douche'],['A-02','Deux panneaux'],['P','Panneau seul'],['C','Composition'],
@@ -423,6 +424,8 @@ function renderFiche() {
 
   for (const img of $('#tiroir-corps').querySelectorAll('img[data-motif]'))
     api.thumb(img.dataset.motif, Number(img.dataset.h)||300).then(src => { if (src) img.src = src; });
+  for (const wrap of $('#tiroir-corps').querySelectorAll('[data-visuel-type]'))
+    loadVisuelThumb(wrap, computeVisuelPaths(d, wrap.dataset.visuelType));
 }
 
 function renderRefs(d) {
@@ -474,6 +477,9 @@ function renderVisuels(d) {
     } else if (impCodes.has(code)) {
       tuileHtml = `<div class="visuel-manquant"></div>`;
       labelCls = 'manquant'; labelTxt = 'motif manquant';
+    } else if (d.stats.upToDate > 0) {
+      tuileHtml = `<div class="visuel-img" data-visuel-type="${esc(code)}"><img style="display:none" alt="${esc(code)}"></div>`;
+      labelCls = 'ok'; labelTxt = d.stats.images === 0 ? 'à jour' : 'à faire';
     } else if (d.stats.images === 0) {
       tuileHtml = `<div class="visuel-afaire" style="opacity:.35"></div>`;
       labelCls = 'ok'; labelTxt = 'à jour';
@@ -487,6 +493,42 @@ function renderVisuels(d) {
     </div>`;
   });
   return `<div class="visuels-grille">${tuiles.join('')}</div>`;
+}
+
+function computeVisuelPaths(d, code) {
+  const outDir = state.data?.settings?.outDir;
+  const rangement = state.data?.settings?.rangement ?? 'decor';
+  if (!outDir || !d.formats?.length) return [];
+  const sep = outDir.includes('\\') ? '\\' : '/';
+  const paths = [];
+  for (const f of d.formats) {
+    if (!f.refs?.length) continue;
+    const [largeur, hauteur] = f.format.split('x');
+    for (const r of f.refs) {
+      const nom = [d.decor.toUpperCase(), f.cote, r.finition && capitalize(r.finition), `${largeur}x${hauteur}`]
+        .filter(Boolean).join(' ');
+      const filename = `${r.ref}-${code}-${nom}.jpg`;
+      const full = rangement === 'decor'
+        ? `${outDir}${sep}${d.dossier}${sep}${filename}`
+        : `${outDir}${sep}${filename}`;
+      paths.push(full);
+    }
+  }
+  return paths;
+}
+
+function loadVisuelThumb(wrap, paths, idx = 0) {
+  if (idx >= paths.length) return;
+  api.thumb(paths[idx], 128).then(src => {
+    if (src) {
+      const img = wrap.querySelector('img');
+      const lbl = wrap.closest('.visuel-tuile')?.querySelector('.visuel-legende span:last-child');
+      if (img) { img.src = src; img.style.display = 'block'; }
+      if (lbl) { lbl.textContent = 'produit'; lbl.className = 'ok'; }
+    } else {
+      loadVisuelThumb(wrap, paths, idx + 1);
+    }
+  });
 }
 
 function resumerFiche(d) {
