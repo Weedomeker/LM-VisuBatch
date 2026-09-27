@@ -21,7 +21,7 @@ const catalogueFilename = client => `gamme_${toSlug(client)}.csv`;
 function buildRegex(config) {
   return {
     refRe: new RegExp(`\\b(${config.refPattern})\\b`),
-    finitionRe: new RegExp(`\\b(${config.finitions.join('|')})\\b`, 'i'),
+    finitionRe: new RegExp(`(?<![a-zA-ZÀ-ÿ0-9])(${config.finitions.join('|')})(?![a-zA-ZÀ-ÿ0-9])`, 'i'),
     motifRe: new RegExp(config.motifPattern, 'i'),
   };
 }
