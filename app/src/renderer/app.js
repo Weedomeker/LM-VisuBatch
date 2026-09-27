@@ -248,3 +248,122 @@ function renderLot() {
   }
   bouton.disabled = !images || !!d.lock;
 }
+
+// --- Génération ---
+async function lancer() {
+  const dossiers = [...state.coches];
+  state.enCours = true;
+  afficherEcran('generation');
+  $('#gen-titre').textContent = 'Génération en cours…';
+  $('#gen-barre-globale').style.width = '0%';
+  $('#gen-texte-globale').textContent = 'Préparation…';
+  $('#gen-reste').textContent = '';
+  $('#gen-annuler').disabled = false;
+
+  const genItems = {};
+  for (const dos of dossiers) genItems[dos] = { fait: 0, total: 0 };
+  renderLignesGen(dossiers, genItems);
+
+  $('#gen-annuler').addEventListener('click', () => {
+    api.cancel();
+    $('#gen-titre').textContent = 'Annulation…';
+    $('#gen-reste').textContent = 'Les images déjà produites sont conservées.';
+    $('#gen-annuler').disabled = true;
+  }, { once: true });
+
+  const result = await api.generate({ dossiers, force: $('#tout-refaire').checked });
+  state.enCours = false;
+  state.bilan = result;
+  $('#tout-refaire').checked = false;
+
+  if (result.error) {
+    message(result.error, true);
+    afficherEcran('liste'); renderListe(); renderLot();
+  } else {
+    afficherEcran('bilan'); renderBilan();
+  }
+  refresh();
+}
+
+function renderLignesGen(dossiers, items) {
+  $('#gen-liste').innerHTML = dossiers.map(dos => {
+    const it = items[dos] || { fait: 0, total: 0 };
+    const pct = it.total ? Math.round(it.fait / it.total * 100) : 0;
+    const texte = it.total ? `${it.fait} / ${it.total}` : (it.rien ? 'rien à faire' : '');
+    return `<li class="gen-rangee" data-dossier="${esc(dos)}">
+      <strong class="gen-nom">${esc(dos)}</strong>
+      <span class="gen-barre-wrap"><div class="progression-barre"><div style="width:${pct}%"></div></div></span>
+      <span class="gen-texte">${texte}</span>
+      <span class="gen-alerte" id="gen-alerte-${esc(dos)}"></span>
+    </li>`;
+  }).join('');
+}
+
+$('#generer').addEventListener('click', lancer);
+
+api.onProgress(e => {
+  if (!state.enCours || state.ecran !== 'generation') return;
+  const barre = $('#gen-barre-globale'), texte = $('#gen-texte-globale');
+  if (!barre) return;
+  if (e.type === 'begin') { texte.textContent = `${plural(e.images,'image')} à produire…`; return; }
+  barre.style.width = `${(e.done / Math.max(1, e.total)) * 100}%`;
+  if (e.type === 'start') {
+    texte.textContent = `${e.done} / ${e.total} · ${e.task.dossier} ${e.task.type}`;
+    const resteSec = Math.ceil((e.total - e.done) * 350 / 1000);
+    $('#gen-reste').textContent = resteSec > 0 ? `environ ${plural(resteSec,'seconde restante')}` : '';
+    const li = document.querySelector(`[data-dossier="${CSS.escape(e.task.dossier)}"] .gen-barre-wrap .progression-barre div`);
+    if (li) li.style.width = `${(e.done / Math.max(1,e.total))*100}%`;
+  }
+});
+
+// --- Bilan ---
+function renderBilan() {
+  const r = state.bilan;
+  if (!r) return;
+  const ok = (r.done ?? 0) - (r.errors?.length ?? 0);
+  $('#bilan-titre').textContent = plural(r.images ?? ok, 'image produite', 'images produites');
+
+  const badges = [];
+  if (r.cancelled) badges.push(`<span class="badge afaire">lot annulé · ${plural((r.done??0) - ok,'non produite','non produites')}</span>`);
+  if (r.errors?.length) badges.push(`<span class="badge depose">${plural(r.errors.length,'impossible')}</span>`);
+  $('#bilan-badges').innerHTML = badges.join('');
+
+  const problemes = r.errors?.slice(0, 20).map(e =>
+    `<li class="probleme"><strong>${esc(e.dossier)}</strong> · ${esc(e.ref)} ${esc(e.type)} : ${esc(e.error)}</li>`
+  ) ?? [];
+  if (problemes.length) {
+    $('#bilan-corriger').hidden = false;
+    $('#bilan-problemes').innerHTML = problemes.join('');
+  } else {
+    $('#bilan-corriger').hidden = true;
+  }
+
+  const par = {};
+  for (const item of (r.produced ?? [])) {
+    (par[item.dossier] = par[item.dossier] || []).push(item);
+  }
+  $('#bilan-produites').innerHTML = Object.keys(par).map(dos => {
+    const items = par[dos];
+    const vignettes = items.map(it =>
+      `<span class="bilan-vignette">
+        <img class="bilan-vignette-img" alt="${esc(it.type)}" data-src="${esc(it.path??'')}">
+        <span class="bilan-vignette-code">${esc(it.type)}</span>
+      </span>`).join('');
+    return `<li class="bilan-produite-rangee">
+      <strong class="bilan-produite-nom">${esc(dos)}</strong>
+      <span class="bilan-vignettes">${vignettes}</span>
+      <span class="bilan-produite-count">${plural(items.length,'image')}</span>
+    </li>`;
+  }).join('') || `<li style="list-style:none;padding:20px 16px;color:var(--doux)">
+    ${r.cancelled ? 'Lot annulé avant toute production.' : 'Aucune image produite.'}</li>`;
+
+  for (const img of document.querySelectorAll('#bilan-produites img[data-src]')) {
+    if (img.dataset.src) api.thumb(img.dataset.src, 128).then(src => { if (src) img.src = src; });
+  }
+}
+
+$('#retour-liste').addEventListener('click', () => {
+  if ($('#bilan-corriger') && !$('#bilan-corriger').hidden) state.filtre = 'incomplets';
+  afficherEcran('liste'); renderListe(); renderLot();
+});
+$('#ouvrir-sortie-bilan').addEventListener('click', () => api.openOutput());
