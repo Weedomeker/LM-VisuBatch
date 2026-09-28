@@ -2,6 +2,15 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.5.1] — 2026-09-28
+
+### Corrigé
+- **Qualité des images** : les visuels sont enregistrés en qualité JPEG maximale, sans sous-échantillonnage
+  de la couleur, comme les exports Photoshop. Le grain et les détails fins des motifs sont conservés
+  (fichiers plus lourds). Les images déjà générées sont recalculées une fois.
+- Motifs des unis lus dans les PSD : extraits eux aussi en qualité maximale.
+- Vignettes de la fiche déco et du bilan plus nettes : elles sont chargées à leur taille d'affichage.
+
 ## [0.5.0] — 2026-09-28
 
 ### Ajouté
