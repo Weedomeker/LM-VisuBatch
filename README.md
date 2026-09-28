@@ -59,9 +59,8 @@ Au démarrage, l'app vérifie s'il existe une version plus récente et affiche a
 « Nouvelle version disponible » avec un bouton « Télécharger » qui ouvre la page de la release.
 Il suffit d'installer le nouvel installeur par-dessus l'ancien : les réglages sont conservés.
 
-Les versions sont lues dans le dépôt public [LM-VisuBatch-releases](https://github.com/Weedomeker/LM-VisuBatch-releases),
-où le workflow « Installeurs » publie chaque release (secret `RELEASES_TOKEN` : jeton limité à ce dépôt,
-permission Contents en écriture). En développement, `VISUELS_VERSION_SIMULEE=0.0.1 npm run dev` force la vérification.
+Les versions sont lues dans les releases GitHub du dépôt, publiées par le workflow « Installeurs ».
+En développement, `VISUELS_VERSION_SIMULEE=0.0.1 npm run dev` force la vérification.
 
 ---
 

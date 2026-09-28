@@ -1,11 +1,11 @@
 // Vérifie au démarrage si une version plus récente est publiée.
-// Le dépôt du code est privé : les installeurs sont aussi publiés dans un dépôt public, lisible sans jeton.
+// Les versions sont lues dans les releases GitHub du dépôt (public : aucun jeton nécessaire).
 const { net } = require('electron');
 const { log } = require('../core');
 const { comparerVersions } = require('../core/utils/version');
 
-const DEPOT_RELEASES = 'Weedomeker/LM-VisuBatch-releases';
-const PAGE_RELEASES = `https://github.com/${DEPOT_RELEASES}/`;
+const DEPOT_RELEASES = 'Weedomeker/LM-VisuBatch';
+const PAGE_RELEASES = `https://github.com/${DEPOT_RELEASES}/releases/`;
 
 // { version, url, notes } si une version plus récente existe, sinon null (y compris hors ligne : jamais bloquant).
 async function verifierMiseAJour(versionActuelle) {
