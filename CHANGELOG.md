@@ -2,6 +2,16 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.6.0] — 2026-09-28
+
+### Ajouté
+- **Réglages client, onglet Références** : le format des références se déduit d'exemples. On saisit
+  quelques références réelles du client ; ce qu'elles ont en commun au début devient obligatoire.
+  L'expression régulière reste modifiable à la main.
+
+### Corrigé
+- Le bilan de fin de lot affiche bien la liste des images produites, avec leurs vignettes.
+
 ## [0.5.1] — 2026-09-28
 
 ### Corrigé
