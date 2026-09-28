@@ -3,7 +3,6 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 
 let catalogueMode = 'auto';
 let ongletActif = 'refs';
-let snapConfig = null;
 
 // --- Onglets ---
 function afficherOnglet(nom) {
@@ -326,7 +325,6 @@ function fermerPanel() {
 async function chargerConfig() {
   const { config, catalogueStatus, autoName } = await api.loadClientConfig();
   currentConfig = { ...config };
-  snapConfig = { ...config };
   afficherOnglet(ongletActif || 'refs');
   if (ongletActif === 'avance') majStatutCatalogue(catalogueStatus, autoName);
 }

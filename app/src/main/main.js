@@ -9,7 +9,7 @@ const core = require('../core');
 const { log } = core;
 const { readCsv } = require('../core/utils/csv');
 const { formatKey } = require('../core/inventaire');
-const { LM_DEFAULTS, loadClientConfig, buildRegex, resolveCatalogue, catalogueFilename } = require('../core/utils/clientConfig');
+const { LM_DEFAULTS, loadClientConfig, resolveCatalogue, catalogueFilename } = require('../core/utils/clientConfig');
 
 // Gabarits, pages statiques, polices et réglages livrés : dans l'app (non archivée, voir « build.asar »).
 const RESOURCES = path.join(__dirname, '..', '..', 'resources');

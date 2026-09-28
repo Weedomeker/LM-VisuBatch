@@ -10,20 +10,8 @@ const TYPES = [
   ['II-02', 'Profilés'],
   ['II-03', 'Kit de pose'],
 ];
-const PX_PAR_CM = 0.95;
 const GAMMES_KEY = 'vb-gammes-recentes';
 const court = p => (p ? p.split(/[\\/]/).filter(Boolean).slice(-2).join(' › ') : 'non choisi');
-
-// Motifs requis par type (format|cote, '' = sans cote)
-const MOTIFS_PAR_TYPE = {
-  'A-01': ['100x210|'],
-  'A-02': ['120x250|GAUCHE', '120x250|DROIT'],
-  P: ['100x210|'],
-  C: ['120x250|GAUCHE', '120x250|DROIT'],
-  'II-01': ['100x210|', '120x250|GAUCHE'],
-  'II-02': [],
-  'II-03': [],
-};
 
 window.addEventListener('error', e => api.log('error', `${e.message} (${e.filename}:${e.lineno})\n${e.error?.stack ?? ''}`));
 window.addEventListener('unhandledrejection', e => api.log('error', e.reason?.stack ?? String(e.reason)));

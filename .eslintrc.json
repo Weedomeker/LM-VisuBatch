@@ -1,16 +1,40 @@
 {
   "root": true,
-  "env": { "node": true, "es2022": true },
-  "parserOptions": { "ecmaVersion": "latest", "sourceType": "script" },
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
   "extends": "eslint:recommended",
   "rules": {
-    "no-unused-vars": ["error", { "args": "none", "caughtErrors": "none" }]
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "caughtErrors": "none"
+      }
+    ]
   },
   "overrides": [
     {
       "files": ["app/src/renderer/**/*.js"],
-      "env": { "node": false, "browser": true },
-      "globals": { "api": "readonly" }
+      "env": {
+        "node": false,
+        "browser": true
+      },
+      "globals": {
+        "api": "readonly"
+      }
+    },
+    {
+      "files": ["app/src/renderer/app.js"],
+      "globals": {
+        "$": "readonly",
+        "esc": "readonly"
+      }
     }
   ]
 }
