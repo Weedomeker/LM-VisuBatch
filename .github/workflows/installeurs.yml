@@ -2,6 +2,8 @@
 # Le binaire de sharp dépend du système : chaque installeur est construit sur une machine de sa plateforme.
 # Lancement : onglet Actions > Installeurs > Run workflow, ou en poussant un tag v* (ex. v0.1.0).
 # Un tag v* publie aussi la release GitHub (notes tirées du CHANGELOG) ; en lancement manuel, seulement si « release » est rempli.
+# La release est aussi publiée dans le dépôt public LM-VisuBatch-releases, que l'app consulte pour signaler les mises à jour
+# (secret RELEASES_TOKEN : jeton limité à ce dépôt, permission Contents en écriture).
 name: Installeurs
 
 on:
@@ -101,3 +103,10 @@ jobs:
           cat notes.md
       - name: Release
         run: gh release create "$TAG" installeurs/* --verify-tag --title "LM VisuBatch ${TAG#v}" --notes-file notes.md
+      - name: Release publique (vérification des mises à jour)
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          # Le lien vers le CHANGELOG du dépôt privé serait en 404 pour les utilisateurs.
+          grep -v '^Historique complet' notes.md > notes-public.md
+          gh release create "$TAG" installeurs/* --repo Weedomeker/LM-VisuBatch-releases             --title "LM VisuBatch ${TAG#v}" --notes-file notes-public.md

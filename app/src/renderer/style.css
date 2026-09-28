@@ -1447,3 +1447,41 @@ td.format {
     transition: none !important;
   }
 }
+
+/* Bandeau « nouvelle version disponible », sous la barre */
+.bandeau-maj {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: none;
+  padding: 8px 20px;
+  background: var(--bleu-clair);
+  color: var(--encre);
+  border-bottom: 1px solid var(--bleu);
+  font-size: var(--t-petit);
+}
+.bandeau-maj-texte {
+  flex: 1;
+  min-width: 0;
+}
+.bandeau-maj-telecharger {
+  background: var(--bleu);
+  color: var(--surface);
+  border: 0;
+  padding: 5px 14px;
+  font-weight: 600;
+}
+.bandeau-maj-telecharger:hover {
+  background: var(--bleu-fonce);
+}
+.bandeau-maj-fermer {
+  background: none;
+  border: 0;
+  padding: 0 4px;
+  font-size: var(--t-titre);
+  line-height: 1;
+  color: var(--doux);
+}
+.bandeau-maj-fermer:hover {
+  color: var(--encre);
+}

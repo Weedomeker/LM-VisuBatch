@@ -829,6 +829,23 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// --- Mise à jour ---
+const MAJ_IGNOREE_KEY = 'vb-maj-ignoree';
+
+async function verifierMaj() {
+  const maj = await api.verifierMaj();
+  if (!maj || localStorage.getItem(MAJ_IGNOREE_KEY) === maj.version) return;
+  $('#maj-version').textContent = `Nouvelle version ${maj.version} disponible`;
+  $('#maj-actuelle').textContent = `(vous avez la ${maj.actuelle}).`;
+  $('#maj-telecharger').onclick = () => api.ouvrirMaj(maj.url);
+  $('#maj-ignorer').onclick = () => {
+    localStorage.setItem(MAJ_IGNOREE_KEY, maj.version);
+    $('#bandeau-maj').hidden = true;
+  };
+  $('#bandeau-maj').hidden = false;
+}
+$('#maj-fermer').onclick = () => ($('#bandeau-maj').hidden = true);
+
 // --- Init ---
 async function init() {
   renderAccueil();
@@ -841,4 +858,5 @@ async function init() {
 }
 
 init();
+verifierMaj();
 window.addEventListener('rc:saved', () => refresh());

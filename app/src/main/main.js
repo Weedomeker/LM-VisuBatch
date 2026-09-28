@@ -10,6 +10,7 @@ const { log } = core;
 const { readCsv } = require('../core/utils/csv');
 const { formatKey } = require('../core/inventaire');
 const { LM_DEFAULTS, loadClientConfig, resolveCatalogue, catalogueFilename } = require('../core/utils/clientConfig');
+const { verifierMiseAJour, PAGE_RELEASES } = require('./maj');
 
 // Gabarits, pages statiques, polices et réglages livrés : dans l'app (non archivée, voir « build.asar »).
 const RESOURCES = path.join(__dirname, '..', '..', 'resources');
@@ -327,6 +328,15 @@ function createWindow() {
   ipcMain.handle('cancel', () => running?.abort());
   ipcMain.handle('open-output', () => settings.outDir && shell.openPath(settings.outDir));
   ipcMain.handle('open-logs', () => shell.openPath(logsDir()));
+  // Mises à jour : seulement dans l'app installée, ou en dev avec VISUELS_VERSION_SIMULEE (remplace la version courante).
+  ipcMain.handle('maj:verifier', () => {
+    const simulee = process.env.VISUELS_VERSION_SIMULEE;
+    if (!app.isPackaged && !simulee) return null;
+    return verifierMiseAJour(simulee || app.getVersion());
+  });
+  ipcMain.handle('maj:ouvrir', (_, url) => {
+    if (typeof url === 'string' && url.startsWith(PAGE_RELEASES)) return shell.openExternal(url);
+  });
   // Erreurs de l'interface, consignées dans le même journal.
   ipcMain.handle('log', (_, level, text) => {
     if (['error', 'warn', 'info'].includes(level)) log[level](`Interface : ${text}`);
