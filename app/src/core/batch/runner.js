@@ -25,6 +25,7 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
   const total = plan.renders.length + plan.copies.length;
   const tag = `${os.hostname()}-${process.pid}`;
   const errors = [];
+  const produced = []; // images écrites, pour le bilan : { dossier, ref, type, path }
   let done = 0;
   let lastSave = Date.now();
 
@@ -34,7 +35,11 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
     if (error) {
       errors.push({ ...describe(task), error });
       log.error(`${task.row.dossier} ${task.row.ref} ${task.type} (${path.basename(task.outputs[0])}) : ${stack || error}`);
-    } else for (const f of task.outputs) manifest.set(f, task.hash);
+    } else
+      for (const f of task.outputs) {
+        manifest.set(f, task.hash);
+        produced.push({ dossier: task.row.dossier, ref: task.row.ref, type: task.type, path: f });
+      }
     onEvent({ type: error ? 'error' : 'done', task: describe(task), done, total, error });
     if (Date.now() - lastSave > 2000) {
       manifest.save();
@@ -126,7 +131,7 @@ async function runPlan(ctx, plan, { manifest, jobs = defaultJobs(), onEvent = ()
     }
     manifest.save();
   }
-  return { done, total, errors, cancelled: !!signal?.aborted };
+  return { done, total, errors, produced, cancelled: !!signal?.aborted };
 }
 
 module.exports = { runPlan, defaultJobs };
