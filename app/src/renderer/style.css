@@ -1285,6 +1285,19 @@ td.format {
   font-family: monospace;
   font-size: var(--t-petit);
 }
+.rc-champ summary {
+  font-size: var(--t-petit);
+  color: var(--doux);
+  cursor: pointer;
+}
+.rc-champ[open] summary {
+  margin-bottom: 4px;
+}
+.rc-testeur-res code {
+  font-family: monospace;
+  font-weight: 400;
+  margin-left: 6px;
+}
 .rc-grille2 {
   display: grid;
   grid-template-columns: 1fr 1fr;

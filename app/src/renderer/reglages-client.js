@@ -27,10 +27,15 @@ function htmlRefs() {
   return `<div class="rc-section">
     <div class="rc-section-titre">Format des références</div>
     <div class="rc-champ">
-      <label for="rc-ref-pattern">Motif (expression régulière)</label>
-      <input type="text" id="rc-ref-pattern" class="mono">
-      <p class="aide">Une référence compte 8 chiffres et commence par 9.</p>
+      <label for="rc-refex-input">Exemples de références du client</label>
+      <div class="rc-tags" id="rc-refex-tags"></div>
+      <p class="aide">Saisissez une référence réelle. Ajoutez-en d'autres pour préciser le format : ce qu'elles ont en commun au début devient obligatoire.</p>
+      <div class="rc-testeur-res" id="rc-ref-deduit"></div>
     </div>
+    <details class="rc-champ" id="rc-ref-manuel">
+      <summary>Modifier l'expression régulière à la main</summary>
+      <input type="text" id="rc-ref-pattern" class="mono" aria-label="Expression régulière des références">
+    </details>
     <div class="rc-testeur">
       <label for="rc-ref-test">Tester avec un nom de fichier</label>
       <input type="text" id="rc-ref-test" placeholder="Tropical 91234567 MAT.jpg">
@@ -148,7 +153,8 @@ function remplirOnglet() {
   const c = currentConfig;
   if (ongletActif === 'refs') {
     if ($('#rc-ref-pattern')) $('#rc-ref-pattern').value = c.refPattern ?? '9\\d{7}';
-    testerRef();
+    if ($('#rc-refex-tags')) renderTags('refex', c.refExemples ?? []);
+    majDeduction(false);
     renderSansRef();
   }
   if (ongletActif === 'finitions') {
@@ -187,7 +193,7 @@ function majExempleNom() {
 function bindOnglet() {
   remplirOnglet();
   if ($('#rc-ref-pattern')) {
-    $('#rc-ref-pattern').addEventListener('input', testerRef);
+    $('#rc-ref-pattern').addEventListener('input', () => majDeduction(false));
   }
   if ($('#rc-ref-test')) {
     $('#rc-ref-test').addEventListener('input', testerRef);
@@ -213,6 +219,34 @@ function bindOnglet() {
       if (p && $('#rc-cat-chemin')) $('#rc-cat-chemin').value = p;
     });
   }
+}
+
+// --- Déduction du motif des références à partir des exemples ---
+// ecrire : remplace l'expression régulière par celle déduite (false au chargement, pour garder une saisie manuelle).
+function majDeduction(ecrire = true) {
+  const el = $('#rc-ref-deduit'),
+    champ = $('#rc-ref-pattern');
+  if (!el || !champ) return;
+  const exemples = getTagValues('refex');
+  if (!exemples.length) {
+    el.className = 'rc-testeur-res';
+    el.innerHTML = `Motif actuel : <code>${esc(champ.value)}</code>`;
+    testerRef();
+    return;
+  }
+  const r = window.deduireRef(exemples);
+  if (r.erreur) {
+    el.className = 'rc-testeur-res err';
+    el.textContent = `✗ ${r.erreur}`;
+  } else {
+    if (ecrire) champ.value = r.pattern;
+    const manuel = champ.value !== r.pattern;
+    el.className = 'rc-testeur-res ok';
+    el.innerHTML = manuel
+      ? `Motif modifié à la main : <code>${esc(champ.value)}</code>`
+      : `✓ ${esc(r.description)} <code>${esc(r.pattern)}</code>`;
+  }
+  testerRef();
 }
 
 // --- Testeurs ---
@@ -275,7 +309,7 @@ function renderTags(type, values) {
           `<span class="rc-tag">${esc(v)} <button data-suppr="${esc(v)}" data-type="${type}" aria-label="Supprimer ${esc(v)}">✕</button></span>`,
       )
       .join('') +
-    `<div class="rc-tag-ajout"><input id="${inputId}" type="text" placeholder="${type === 'formats' ? '125x300' : 'SATINÉ'}"><button data-ajouter="${type}">+ Ajouter</button></div>`;
+    `<div class="rc-tag-ajout"><input id="${inputId}" type="text" placeholder="${{ formats: '125x300', refex: '94964372' }[type] ?? 'SATINÉ'}"><button data-ajouter="${type}">+ Ajouter</button></div>`;
 }
 
 function getTagValues(type) {
@@ -341,6 +375,7 @@ function lireConfig() {
     nomPattern: $('#rc-nom-pattern')?.value ?? currentConfig.nomPattern,
     formats: $('#rc-formats-tags') ? getTagValues('formats') : currentConfig.formats,
     finitions: $('#rc-finitions-tags') ? getTagValues('finitions') : currentConfig.finitions,
+    refExemples: $('#rc-refex-tags') ? getTagValues('refex') : currentConfig.refExemples,
   };
 }
 
@@ -375,6 +410,7 @@ document.addEventListener('click', e => {
   const suppr = e.target.closest('[data-suppr]');
   if (suppr && suppr.closest('#rc-contenu')) {
     suppr.closest('.rc-tag').remove();
+    if (suppr.dataset.type === 'refex') majDeduction();
     return;
   }
   const ajouter = e.target.closest('[data-ajouter]');
@@ -390,6 +426,7 @@ document.addEventListener('click', e => {
     tag.className = 'rc-tag';
     tag.innerHTML = `${esc(val)} <button data-suppr="${esc(val)}" data-type="${type}" aria-label="Supprimer ${esc(val)}">✕</button>`;
     container.insertBefore(tag, ajoutEl);
+    if (type === 'refex') majDeduction();
     if (input) {
       input.value = '';
       input.focus();
