@@ -2,6 +2,19 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.5.0] — 2026-09-28
+
+### Ajouté
+- **Réglages client** : panneau à 5 onglets (Références, Finitions, Noms, Gabarits, Avancé) pour adapter
+  l'app aux conventions de nommage d'un client, avec testeurs en direct ; modèle `config.example.json`.
+
+### Modifié
+- **Nouvelle interface** anthracite/orange (police IBM Plex Sans) en 4 écrans : accueil, liste des décos
+  avec filtres, fiche déco avec vignettes des visuels produits, génération et bilan.
+
+### Corrigé
+- Finitions accentuées mieux reconnues dans les noms de fichiers.
+
 ## [0.4.0] — 2026-09-25
 
 ### Ajouté
