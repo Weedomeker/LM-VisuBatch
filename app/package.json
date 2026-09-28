@@ -1,6 +1,6 @@
 {
   "name": "LM-VisuBatch",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "productName": "LM VisuBatch",
   "private": true,
   "description": "Génération par lot des visuels web des panneaux de douche",

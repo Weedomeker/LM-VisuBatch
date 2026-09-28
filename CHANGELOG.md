@@ -2,6 +2,14 @@
 
 Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : `MAJEUR.MINEUR.CORRECTIF`.
 
+## [0.7.0] — 2026-09-28
+
+### Ajouté
+- **Mises à jour** : au démarrage, un bandeau signale qu'une nouvelle version est disponible.
+  « Télécharger » ouvre la page de la version ; « Ignorer cette version » ne la signale plus.
+  Installer le nouvel installeur par-dessus l'ancien suffit, les réglages sont conservés.
+  Les versions 0.6.0 et antérieures ne font pas cette vérification : il faut installer la 0.7.0 à la main une dernière fois.
+
 ## [0.6.0] — 2026-09-28
 
 ### Ajouté
