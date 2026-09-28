@@ -11,6 +11,7 @@
     "dev": "electron . --dev",
     "generate": "node src/cli/generate.js",
     "inventaire": "node src/cli/inventaire.js",
+    "test": "node --test test/clientConfig.test.js test/inventaire.test.js",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac"
   },

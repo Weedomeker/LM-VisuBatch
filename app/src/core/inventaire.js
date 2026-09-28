@@ -4,20 +4,21 @@
 const fs = require('fs');
 const path = require('path');
 const { readCsv, writeCsv } = require('./utils/csv');
+const { LM_DEFAULTS, buildRegex } = require('./utils/clientConfig');
 
 const COLS = ['ref', 'decor', 'finition', 'largeur', 'hauteur', 'cote', 'dossier', 'motif'];
-const FORMATS = ['100x210', '100x255', '125x210', '125x255', '150x210', '150x255'];
+const FORMATS = LM_DEFAULTS.formats; // conservé pour rétrocompatibilité CLI
 
 // Les noms viennent d'un Mac et n'ont pas tous la même forme :
 // « Leaf 100x210 94953622 MAT.pdf », « ARCHE BEIGE 100x210+BLANC 94963987 MAT.pdf »,
 // « ULM180 CARAMEL 100x210 94964391.pdf », « 000 BLANC 100X210 au 10ème 94956949.jpg »…
-function parse(file) {
+function _parse(file, regex) {
   const name = file.normalize('NFC');
   const size = name.match(/(\d{2,3})\s*x\s*(\d{3})/i);
   if (!size) return null;
   const side = (name.match(/\b(DROIT|GAUCHE)\b/i) || [])[1];
-  const ref = (name.match(/\b(9\d{7})\b/) || [])[1];
-  const finition = ((name.match(/\b(MAT|BRILLANT)\b/i) || [])[1] || '').toUpperCase();
+  const ref = (name.match(regex.refRe) || [])[1];
+  const finition = ((name.match(regex.finitionRe) || [])[1] || '').toUpperCase();
   return {
     name,
     decor: name.slice(0, size.index).trim(),
@@ -26,14 +27,13 @@ function parse(file) {
     cote: (side || '').toUpperCase(),
     ref,
     finition,
-    // Tolère les fautes vues dans la gamme : « au 10éme », « au 10èmr ».
-    isMotif: /au\s*10\s*[èée]m/i.test(name) && /\.jpe?g$/i.test(name),
+    isMotif: regex.motifRe.test(name) && /\.jpe?g$/i.test(name),
   };
 }
 
 const formatKey = (format, cote) => `${format}|${cote || ''}`;
 
-// Noms en NFC, comme ceux des fichiers : macOS peut rendre les accents décomposés (« CRÈME »),
+// Noms en NFC, comme ceux des fichiers : macOS peut rendre les accents décomposés (« CRÈME »),
 // et le nom du dossier sert de clé (gamme_deco.csv, réglages). Les chemins restent valides : macOS ignore la forme.
 const decorDirs = root =>
   fs
@@ -46,11 +46,15 @@ const decorDirs = root =>
  * @param {string} base dossier parent (la GAMME, ou le dossier d'où vient un décor déposé)
  * @param {string} dir nom du dossier décor
  * @param {Object<string, {ref: string, finition: string}[]>} [saisies] réfs saisies dans l'app, par « 100x210|DROIT »
+ * @param {{regex, formats}} [opts] regex et formats issus de clientConfig
  * @returns {{dossier, base, decor, formats: object[], rows: object[], problems: string[]}}
  *   `formats` : tableau format × côté (motif, réfs et leur origine) ; `rows` : une ligne par référence
  */
-function scanDecor(base, dir, saisies = {}) {
-  const files = fs.readdirSync(path.join(base, dir)).map(parse).filter(Boolean);
+function scanDecor(base, dir, saisies = {}, { regex = buildRegex(LM_DEFAULTS), formats = FORMATS } = {}) {
+  const files = fs
+    .readdirSync(path.join(base, dir))
+    .map(f => _parse(f, regex))
+    .filter(Boolean);
   const key = f => formatKey(`${f.largeur}x${f.hauteur}`, f.cote);
 
   const refsByKey = new Map();
@@ -91,15 +95,15 @@ function scanDecor(base, dir, saisies = {}) {
 
   // Tableau des formats attendus (+ ceux, hors standard, trouvés dans le dossier).
   const cotes = [...motifs.values()].some(m => m.cote) ? ['GAUCHE', 'DROIT'] : [''];
-  const keys = new Set(FORMATS.flatMap(f => cotes.map(c => formatKey(f, c))));
+  const keys = new Set(formats.flatMap(f => cotes.map(c => formatKey(f, c))));
   for (const k of [...motifs.keys(), ...refsByKey.keys()]) keys.add(k);
-  const formats = [...keys].map(k => {
+  const fmts = [...keys].map(k => {
     const [format, cote] = k.split('|');
     return { key: k, format, cote, motif: motifs.get(k)?.name || null, refs: refsByKey.get(k) || [] };
   });
 
   const decor = [...motifs.values()][0]?.decor || dir;
-  return { dossier: dir, base, decor, formats, rows, problems };
+  return { dossier: dir, base, decor, formats: fmts, rows, problems };
 }
 
 /**
@@ -108,8 +112,11 @@ function scanDecor(base, dir, saisies = {}) {
  * @param {object} [options]
  * @param {string[]} [options.sources] chemins complets de dossiers décors déposés
  * @param {Object<string, object>} [options.saisies] réfs saisies, par chemin complet du dossier décor
+ * @param {object} [options.clientConfig] configuration client (LM_DEFAULTS par défaut)
  */
-function scanGamme(root, { sources = [], saisies = {} } = {}) {
+function scanGamme(root, { sources = [], saisies = {}, clientConfig = LM_DEFAULTS } = {}) {
+  const regex = buildRegex(clientConfig);
+  const formats = clientConfig.formats;
   const entries = new Map();
   if (root) for (const dir of decorDirs(root)) entries.set(dir, { base: root, dir, depot: false });
   for (const src of sources) {
@@ -120,7 +127,7 @@ function scanGamme(root, { sources = [], saisies = {} } = {}) {
   const deco = [];
   for (const { base, dir, depot } of entries.values()) {
     try {
-      deco.push({ ...scanDecor(base, dir, saisies[path.join(base, dir)]), depot });
+      deco.push({ ...scanDecor(base, dir, saisies[path.join(base, dir)], { regex, formats }), depot });
     } catch (e) {
       deco.push({ dossier: dir, base, decor: dir, formats: [], rows: [], problems: [`${dir} : illisible (${e.message})`], depot });
     }
@@ -137,4 +144,4 @@ function scanGamme(root, { sources = [], saisies = {} } = {}) {
 const readInventaire = file => readCsv(file).map(r => ({ ...r, motif: (r.motif || '').replace(/\\/g, '/') }));
 const writeInventaire = (file, rows) => writeCsv(file, COLS, rows);
 
-module.exports = { scanGamme, readInventaire, writeInventaire, formatKey, FORMATS };
+module.exports = { scanGamme, readInventaire, writeInventaire, formatKey, FORMATS, _parse };

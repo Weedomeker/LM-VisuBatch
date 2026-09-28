@@ -12,9 +12,9 @@ const { extractMotif } = require('./extract-motif');
 const TYPES = ['A-01', 'A-02', 'P', 'C', 'II-01', 'II-02', 'II-03'];
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-// « LEAF Mat 100x210 », « PALMERAIE Brillant 100x210 DROIT »
+// « LEAF DROIT Mat 100x210 », « PALMERAIE Brillant 100x210 »
 const productName = r =>
-  [r.decor.toUpperCase(), r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`, r.cote].filter(Boolean).join(' ');
+  [r.decor.toUpperCase(), r.cote, r.finition && capitalize(r.finition), `${r.largeur}x${r.hauteur}`].filter(Boolean).join(' ');
 const outputName = (r, type) => `${r.ref}-${type}-${productName(r)}.jpg`;
 
 // `base` : dossier d'où vient le décor (GAMME ou décor déposé) ; absent des inventaires CSV.
@@ -32,7 +32,8 @@ const requireDir = dir => {
 const uniDossier = (ctx, code) => ctx.dirs.find(d => d.startsWith(`${code} `));
 const uniLabel = (ctx, code) => {
   const name = (uniDossier(ctx, code) || String(code)).replace(/^\d{3}\s*/, '').toLowerCase();
-  return `ULM ${code}\n${name}`;
+  const prefix = ctx.clientConfig?.uniPrefix ?? 'ULM';
+  return `${prefix} ${code}\n${name}`;
 };
 
 // Source du motif d'un uni en 100 x hauteur, toujours lue dans la gamme (rien n'est embarqué dans l'app) :
@@ -42,10 +43,12 @@ function uniSource(ctx, code, hauteur) {
   if (!dossier) throw new Error(`Dossier de l'uni ${code} introuvable`);
   const inv = ctx.rows.find(r => r.dossier === dossier && r.largeur === '100' && r.hauteur === hauteur);
   if (inv) return { file: motifPath(ctx, inv) };
-  const webDir = path.join(ctx.root, dossier, ' LM WEB 2025');
+  const outputFolder = ctx.clientConfig?.outputFolder ?? ' LM WEB 2025';
+  const prefix = ctx.clientConfig?.uniPrefix ?? 'ULM';
+  const webDir = path.join(ctx.root, dossier, outputFolder);
   const psd = fs.existsSync(webDir) && fs.readdirSync(webDir).find(f => new RegExp(`100x${hauteur}\\.psd$`, 'i').test(f));
   if (!psd) throw new Error(`Aucune image ni PSD 100x${hauteur} pour l'uni ${code}`);
-  return { file: path.join(ctx.cacheDir, 'unis', `ULM${code}-100x${hauteur}.jpg`), psd: path.join(webDir, psd) };
+  return { file: path.join(ctx.cacheDir, 'unis', `${prefix}${code}-100x${hauteur}.jpg`), psd: path.join(webDir, psd) };
 }
 
 async function uniMotif(ctx, code, hauteur) {

@@ -10,9 +10,7 @@ const { acquireLock, currentLock } = require('./utils/lock');
 const { TYPES } = require('./render/renderers');
 const { setFontsDir } = require('./render/render');
 const { log, configureLog, logLot } = require('./utils/log');
-
-// Réglages des décors livrés avec l'app (uni, libellé, cadrage C), relevés sur les InDesign existants.
-const defaultReglages = (resources = DEFAULT_RESOURCES) => readDecors(path.join(resources, 'gamme_deco.csv'));
+const { LM_DEFAULTS, resolveCatalogue } = require('./utils/clientConfig');
 
 /**
  * Prépare un lot : scan, contexte, manifeste et plan (rien n'est encore écrit).
@@ -38,15 +36,19 @@ function prepareBatch({
   resources = DEFAULT_RESOURCES,
   cacheDir,
   scan,
+  clientConfig,
   ...selection
 }) {
-  if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies });
+  const resolvedConfig = clientConfig || LM_DEFAULTS;
+  if (!inventaire && !scan) scan = scanGamme(root, { sources, saisies, clientConfig: resolvedConfig });
+  const cataloguePath = config ? config : resolveCatalogue(resolvedConfig, root || '', path.join(resources, 'gamme_deco.csv'));
   const ctx = createContext({
     root,
     rows: scan ? scan.rows : readInventaire(inventaire),
-    deco: reglages || (config ? readDecors(config) : defaultReglages(resources)),
+    deco: reglages || readDecors(cataloguePath),
     resources,
     cacheDir: cacheDir || path.join(outDir, '.cache'),
+    clientConfig: resolvedConfig,
   });
   setFontsDir(path.join(ctx.resources, 'fonts'));
   const manifest = new Manifest(outDir);
@@ -97,7 +99,6 @@ module.exports = {
   runBatch,
   runPlan,
   defaultJobs,
-  defaultReglages,
   currentLock,
   log,
   configureLog,
@@ -106,4 +107,5 @@ module.exports = {
   writeInventaire,
   TYPES,
   FORMATS,
+  LM_DEFAULTS,
 };

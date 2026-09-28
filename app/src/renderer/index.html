@@ -10,37 +10,50 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header class="barre">
-      <strong class="marque">LM VisuBatch</strong>
-      <div class="dossier">
-        <span class="dossier-nom">GAMME</span>
-        <span class="dossier-chemin" id="chemin-gamme">non choisi</span>
+    <!-- EN-TÊTE -->
+    <header class="barre" id="barre">
+      <strong class="marque"><b class="marque-lm">LM</b> <span class="marque-nom">VisuBatch</span></strong>
+      <span id="barre-gamme" hidden class="barre-info">
+        <b>GAMME</b>
+        <span class="barre-info-chemin" id="chemin-gamme"></span>
         <button class="lien" data-choisir="gamme">Changer</button>
-      </div>
-      <div class="dossier">
-        <span class="dossier-nom">Sortie</span>
-        <span class="dossier-chemin" id="chemin-sortie">non choisi</span>
+      </span>
+      <span id="barre-sortie" hidden class="barre-info">
+        <b>Sortie</b>
+        <span class="barre-info-chemin" id="chemin-sortie"></span>
         <button class="lien" data-choisir="sortie">Changer</button>
-      </div>
+      </span>
+      <span class="barre-flex"></span>
+      <button class="secondaire" id="btn-options" hidden>⚙ Options</button>
+      <button class="secondaire" id="btn-reglages-client">⚙ Réglages client</button>
       <button class="btn-aide" id="btn-aide" aria-label="Aide — fichiers requis">?</button>
-      <div class="options-wrap">
-        <button class="secondaire" id="btn-options">⚙ Options</button>
-        <div class="popover-options" id="popover-options" hidden>
-          <span class="popover-label">Types de visuels</span>
-          <div id="types"></div>
-          <span class="popover-label" style="margin-top: 14px">Rangement des images</span>
-          <div class="bascule" role="radiogroup" aria-label="Rangement des images">
-            <button role="radio" data-rangement="plat">Tout à plat</button>
-            <button role="radio" data-rangement="decor">Un dossier par déco</button>
-          </div>
-          <span class="popover-label" style="margin-top: 14px">Journaux</span>
-          <button class="lien" id="ouvrir-logs">Ouvrir les logs</button>
-        </div>
-      </div>
     </header>
 
-    <main id="principal">
+    <!-- ÉCRAN ACCUEIL -->
+    <div id="ecran-accueil" class="ecran">
+      <div class="accueil-corps">
+        <div class="accueil-inner">
+          <div class="accueil-titre-row">
+            <strong class="accueil-titre">Gammes récentes</strong>
+            <button class="secondaire" id="parcourir">Parcourir…</button>
+          </div>
+          <ul class="gammes-liste" id="gammes-liste"></ul>
+          <div class="depot-zone" id="depot-zone-accueil">ou déposez un dossier <b>GAMME</b> ici</div>
+        </div>
+      </div>
+      <footer class="accueil-footer">
+        <span class="section-titre">Sortie</span>
+        <span class="gamme-chemin" id="accueil-sortie-chemin" style="font-family: monospace; font-size: var(--t-petit)">non choisi</span>
+        <button class="lien" data-choisir="sortie">Changer</button>
+        <span class="barre-flex"></span>
+        <span class="aide">La sortie est mémorisée pour chaque gamme.</span>
+      </footer>
+    </div>
+
+    <!-- ÉCRAN LISTE -->
+    <div id="ecran-liste" class="ecran" hidden>
       <div class="barre-outils">
+        <button class="lien" id="retour-gammes">‹ Gammes</button>
         <input type="search" id="recherche" placeholder="Chercher une déco" aria-label="Chercher une déco" />
         <div class="filtres" role="radiogroup" aria-label="Filtrer les décos">
           <button role="radio" data-filtre="tous">Tous</button>
@@ -49,40 +62,119 @@
         </div>
         <button class="lien" id="cocher-afaire">Cocher les À faire</button>
         <button class="lien" id="tout-decocher">Tout décocher</button>
-        <button class="lien" id="ajouter-source">+ Ajouter un dossier</button>
-      </div>
-      <div class="depot" id="depot" hidden>
-        <p><strong>Déposez un dossier déco</strong> ou un CSV de références</p>
+        <span class="barre-flex"></span>
+        <span class="legende-badges">
+          <span class="badge ok" style="margin: 0">ok</span>
+          <span class="badge afaire" style="margin: 0">à faire</span>
+          <span class="badge depose" style="margin: 0">manquant</span>
+        </span>
       </div>
       <ul id="deco" class="deco" aria-label="Décos"></ul>
-    </main>
+      <footer class="lot" id="lot">
+        <label class="refaire"><input type="checkbox" id="tout-refaire" /> Tout refaire</label>
+        <div class="resume" id="resume"></div>
+        <div class="actions" id="actions">
+          <button class="principal" id="generer">Générer</button>
+        </div>
+      </footer>
+    </div>
 
-    <footer class="lot" id="lot">
-      <label class="refaire"><input type="checkbox" id="tout-refaire" /> Tout refaire</label>
-      <div class="resume" id="resume"></div>
-      <div class="actions" id="actions">
-        <button class="principal" id="generer">Générer</button>
+    <!-- ÉCRAN GÉNÉRATION -->
+    <div id="ecran-generation" class="ecran" hidden>
+      <div class="generation-corps">
+        <div class="generation-inner">
+          <strong class="generation-titre" id="gen-titre">Génération en cours…</strong>
+          <div class="generation-globale">
+            <div class="progression">
+              <div class="progression-barre"><div id="gen-barre-globale"></div></div>
+              <div class="progression-texte" id="gen-texte-globale">Préparation…</div>
+            </div>
+          </div>
+          <ul class="generation-liste" id="gen-liste"></ul>
+        </div>
       </div>
-    </footer>
+      <footer class="generation-footer">
+        <span class="aide" id="gen-reste"></span>
+        <span class="barre-flex"></span>
+        <button class="secondaire" id="gen-annuler">Annuler</button>
+      </footer>
+    </div>
 
-    <!-- Tiroir fiche -->
+    <!-- ÉCRAN BILAN -->
+    <div id="ecran-bilan" class="ecran" hidden>
+      <div class="bilan-corps">
+        <div class="bilan-inner">
+          <div class="bilan-titre-row">
+            <strong class="bilan-titre" id="bilan-titre"></strong>
+            <span id="bilan-badges"></span>
+          </div>
+          <div id="bilan-corriger" hidden class="bilan-section">
+            <div class="section-titre">À corriger</div>
+            <ul class="problemes" id="bilan-problemes"></ul>
+          </div>
+          <div class="bilan-section">
+            <div class="section-titre">Produites</div>
+            <ul class="bilan-produites" id="bilan-produites"></ul>
+          </div>
+        </div>
+      </div>
+      <footer class="bilan-footer">
+        <button class="lien" id="ouvrir-sortie-bilan">Ouvrir le dossier de sortie</button>
+        <span class="barre-flex"></span>
+        <button class="principal" id="retour-liste">Retour à la liste</button>
+      </footer>
+    </div>
+
+    <!-- TIROIR FICHE -->
     <div class="tiroir-fond" id="tiroir-fond" hidden></div>
     <aside class="tiroir" id="tiroir" hidden>
       <div class="tiroir-entete">
         <strong class="tiroir-titre" id="tiroir-titre"></strong>
-        <button class="tiroir-fermer" id="tiroir-fermer" aria-label="Fermer la fiche">✕</button>
+        <button class="fermer" id="tiroir-fermer" aria-label="Fermer la fiche">✕</button>
       </div>
       <div class="tiroir-corps" id="tiroir-corps"></div>
     </aside>
 
+    <!-- TIROIR OPTIONS -->
+    <div class="tiroir-fond" id="opt-fond" hidden></div>
+    <aside class="tiroir" id="opt-tiroir" hidden>
+      <div class="tiroir-entete">
+        <strong class="tiroir-titre">Options</strong>
+        <button class="fermer" id="opt-fermer" aria-label="Fermer les options">✕</button>
+      </div>
+      <div class="tiroir-corps" id="opt-corps">
+        <div class="opt-section">
+          <div class="section-titre">Types de visuels</div>
+          <div id="types"></div>
+          <p class="aide" id="opt-types-resume"></p>
+        </div>
+        <div class="opt-section">
+          <div class="section-titre">Rangement des images</div>
+          <div class="bascule" role="radiogroup" aria-label="Rangement des images">
+            <button role="radio" data-rangement="plat">Tout à plat</button>
+            <button role="radio" data-rangement="decor">Un dossier par déco</button>
+          </div>
+        </div>
+        <div class="opt-section">
+          <div class="section-titre">Aperçu de la sortie</div>
+          <div class="apercu" id="opt-apercu"></div>
+        </div>
+        <div class="opt-section">
+          <div class="section-titre">Journaux</div>
+          <button class="lien" id="ouvrir-logs">Ouvrir les logs</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MESSAGES -->
     <div class="messages" id="messages" role="status"></div>
 
-    <!-- Modale d'aide -->
+    <!-- MODALE AIDE -->
     <div class="aide-fond" id="aide-fond" hidden></div>
-    <dialog class="aide-modale" id="aide-modale">
+    <dialog class="aide-modale" id="aide-modale" aria-labelledby="aide-titre">
       <div class="aide-entete">
         <strong class="aide-titre">Fichiers requis</strong>
-        <button class="tiroir-fermer" id="aide-fermer" aria-label="Fermer l'aide">✕</button>
+        <button class="fermer" id="aide-fermer" aria-label="Fermer l'aide">✕</button>
       </div>
       <div class="aide-corps">
         <section>
@@ -142,6 +234,37 @@
       </div>
     </dialog>
 
+    <!-- RÉGLAGES CLIENT -->
+    <div class="rc-fond" id="rc-fond" hidden></div>
+    <div class="rc-modale" id="rc-modale" role="dialog" aria-modal="true" aria-labelledby="rc-titre" hidden>
+      <div class="rc-entete">
+        <strong class="rc-titre" id="rc-titre">Réglages client</strong>
+        <button class="fermer" id="rc-fermer" aria-label="Fermer">✕</button>
+      </div>
+      <div class="rc-alerte" id="rc-alerte" hidden>Aucune configuration trouvée — complétez les réglages pour activer l'analyse.</div>
+      <div class="rc-corps">
+        <nav class="rc-nav" id="rc-nav">
+          <button data-onglet="refs" aria-selected="true">Références</button>
+          <button data-onglet="finitions" aria-selected="false">Finitions</button>
+          <button data-onglet="noms" aria-selected="false">Noms des images</button>
+          <button data-onglet="gabarits" aria-selected="false">Gabarits</button>
+          <button data-onglet="avance" aria-selected="false">Avancé</button>
+        </nav>
+        <div class="rc-contenu" id="rc-contenu"></div>
+      </div>
+      <div class="rc-pied">
+        <button class="secondaire" id="rc-annuler">Annuler</button>
+        <button class="principal" id="rc-enregistrer">Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- DÉPÔT OVERLAY -->
+    <div class="depot" id="depot" hidden>
+      <strong class="depot-titre" id="depot-titre"></strong>
+      <span class="aide" id="depot-aide"></span>
+    </div>
+
+    <script src="reglages-client.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
