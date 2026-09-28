@@ -6,7 +6,7 @@ const os = require('os');
 const crypto = require('crypto');
 
 // À incrémenter quand le rendu change (gabarits recalés, étiquettes…) : tout sera régénéré.
-const ENGINE_VERSION = 1;
+const ENGINE_VERSION = 2;
 const MANIFEST = '.visuels-manifest.json';
 
 // Tampon d'un fichier (taille + date) ou d'un dossier (gabarit : ses fichiers, récursivement).

@@ -451,7 +451,7 @@ function renderBilan() {
 
   for (const img of document.querySelectorAll('#bilan-produites img[data-src]')) {
     if (img.dataset.src)
-      api.thumb(img.dataset.src, 128).then(src => {
+      api.thumb(img.dataset.src, hauteurVignette(img, 64)).then(src => {
         if (src) img.src = src;
       });
   }
@@ -622,9 +622,16 @@ function computeVisuelPaths(d, code) {
   return paths;
 }
 
+// Hauteur de miniature à demander pour un élément : sa hauteur affichée × densité de l'écran,
+// arrondie au multiple de 64 supérieur (limite le nombre de variantes mises en cache).
+function hauteurVignette(el, defaut = 400) {
+  const h = (el?.clientHeight || defaut) * (window.devicePixelRatio || 1);
+  return Math.ceil(h / 64) * 64;
+}
+
 function loadVisuelThumb(wrap, paths, idx = 0) {
   if (idx >= paths.length) return;
-  api.thumb(paths[idx], 128).then(src => {
+  api.thumb(paths[idx], hauteurVignette(wrap)).then(src => {
     if (src) {
       const img = wrap.querySelector('img');
       const lbl = wrap.closest('.visuel-tuile')?.querySelector('.visuel-legende span:last-child');

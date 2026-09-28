@@ -36,7 +36,7 @@ async function extractMotif(psdPath, outFile, position = 'unique') {
   if (merged && !uniform) {
     await sharp(Buffer.from(merged.data.buffer), { raw: { width, height, channels: 4 } })
       .flatten({ background: '#ffffff' })
-      .jpeg({ quality: 95 })
+      .jpeg({ quality: 100, chromaSubsampling: '4:4:4' })
       .toFile(outFile);
     return { name: panel.name, source: linked.name, width, height };
   }
@@ -62,7 +62,7 @@ async function extractMotif(psdPath, outFile, position = 'unique') {
   await sharp({ create: { width, height, channels: 4, background: '#ffffff' } })
     .composite(composites)
     .flatten({ background: '#ffffff' })
-    .jpeg({ quality: 95 })
+    .jpeg({ quality: 100, chromaSubsampling: '4:4:4' })
     .toFile(outFile);
   return { name: panel.name, source: linked.name, width, height };
 }

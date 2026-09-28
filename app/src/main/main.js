@@ -235,7 +235,7 @@ async function thumb(file, height = 240) {
       key,
       sharp(file)
         .resize({ height })
-        .jpeg({ quality: 80 })
+        .jpeg({ quality: 90 })
         .toBuffer()
         .then(b => `data:image/jpeg;base64,${b.toString('base64')}`)
         .catch(e => {

@@ -48,7 +48,8 @@ function uniSource(ctx, code, hauteur) {
   const webDir = path.join(ctx.root, dossier, outputFolder);
   const psd = fs.existsSync(webDir) && fs.readdirSync(webDir).find(f => new RegExp(`100x${hauteur}\\.psd$`, 'i').test(f));
   if (!psd) throw new Error(`Aucune image ni PSD 100x${hauteur} pour l'uni ${code}`);
-  return { file: path.join(ctx.cacheDir, 'unis', `${prefix}${code}-100x${hauteur}.jpg`), psd: path.join(webDir, psd) };
+  // « unis-q100 » : extractions en qualité 100 (le dossier « unis » contenait celles en qualité 95).
+  return { file: path.join(ctx.cacheDir, 'unis-q100', `${prefix}${code}-100x${hauteur}.jpg`), psd: path.join(webDir, psd) };
 }
 
 async function uniMotif(ctx, code, hauteur) {

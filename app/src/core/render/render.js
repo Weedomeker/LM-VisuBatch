@@ -379,7 +379,7 @@ async function saveJpeg(img, file) {
   await sharp(img.data, { raw: { width: img.width, height: img.height, channels: img.channels || 4 } })
     .removeAlpha()
     .withMetadata({ density: 300 })
-    .jpeg({ quality: 88, mozjpeg: true })
+    .jpeg({ quality: 100, chromaSubsampling: '4:4:4', mozjpeg: true })
     .toFile(file);
 }
 
@@ -400,7 +400,7 @@ async function renderP(motifPath, file, size = 4000) {
     .flatten({ background: '#ffffff' })
     .composite([{ input: Buffer.from(strokeSvg(size, size, lines)), left: 0, top: 0 }])
     .withMetadata({ density: 300 })
-    .jpeg({ quality: 88, mozjpeg: true })
+    .jpeg({ quality: 100, chromaSubsampling: '4:4:4', mozjpeg: true })
     .toFile(file);
 }
 
